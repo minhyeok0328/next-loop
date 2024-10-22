@@ -87,3 +87,5 @@ docs/_build/
 # Environments
 .env
 
+# Airflow
+logs/
