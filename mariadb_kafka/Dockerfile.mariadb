@@ -1,0 +1,14 @@
+# Dockerfile.mariadb
+FROM mariadb:latest
+
+# 초기화 스크립트 추가 - 필요한 경우
+# COPY ./init.sql /docker-entrypoint-initdb.d/
+
+# 환경 변수 설정
+ENV MYSQL_ROOT_PASSWORD=rootpassword
+ENV MYSQL_DATABASE=mydb
+ENV MYSQL_USER=user
+ENV MYSQL_PASSWORD=userpassword
+
+# 포트 설정
+EXPOSE 3306
