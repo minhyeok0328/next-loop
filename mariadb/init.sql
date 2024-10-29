@@ -26,3 +26,17 @@ CREATE TABLE IF NOT EXISTS `hotel_order` (
     check_out_expected DATETIME NULL,
     CONSTRAINT hotel_order_pk PRIMARY KEY (order_seq)
 );
+
+CREATE TABLE IF NOT EXISTS `hotel_list` (
+    hotel_seq INT auto_increment NOT NULL,
+    hotel_name varchar(100) NOT NULL,
+    CONSTRAINT hotel_list_pk PRIMARY KEY (hotel_seq)
+);
+
+INSERT INTO `hotel_list` (hotel_name)
+SELECT '한화해운대' UNION ALL
+SELECT '한화쏘라노' UNION ALL
+SELECT '테이크' UNION ALL
+SELECT '오크밸리' UNION ALL
+SELECT '세인트존스'
+WHERE NOT EXISTS (SELECT 1 FROM `hotel_list`);
