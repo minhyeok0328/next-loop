@@ -1,0 +1,1 @@
+from .fastapi_decorator import controller, get, post
