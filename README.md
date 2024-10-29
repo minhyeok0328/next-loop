@@ -3,5 +3,3 @@ pipeline architecture
 
 
 test
-haha
-test
