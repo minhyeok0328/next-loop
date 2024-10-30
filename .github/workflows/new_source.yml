@@ -1,0 +1,40 @@
+name: Deploy to Instance
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+
+jobs:
+  deploy:
+    # PR이 머지되었을 때만 실행
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SSH and deploy to instance
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+        run: |
+          echo "testing"
+          # SSH 키 설정
+          # mkdir -p ~/.ssh
+          # echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          # chmod 600 ~/.ssh/deploy_key
+          
+          # known_hosts 설정
+          # ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+          
+          # SSH로 서버 접속 및 코드 업데이트 실행
+          # ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_HOST '
+          #   cd /path/to/your/project && \
+          #   git pull origin main && \
+            # 필요한 경우 추가 배포 명령어 실행
+            # npm install && npm run build
+            # docker-compose up -d
+          '
