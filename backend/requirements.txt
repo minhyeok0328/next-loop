@@ -2,3 +2,4 @@ fastapi[standard]==0.115.4
 pandas==2.2.3
 SQLAlchemy==2.0.36
 PyMySQL==1.1.1
+python-dotenv==1.0.1

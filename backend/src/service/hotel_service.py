@@ -1,21 +1,24 @@
+import os
 import pandas as pd
 import io
 import json
 from sqlalchemy import Table, create_engine, MetaData, insert
 from sqlalchemy.exc import SQLAlchemyError
+from dotenv import load_dotenv
 
 
-DB: dict = {
-    'address': '192.168.0.9',
-    'user': 'next-loop',
-    'password': '1234',
-    'database': 'next-loop'
+load_dotenv()
+CONFIG: dict = {
+    'DB_ADDRESS': os.getenv('DB_ADDRESS'),
+    'DB_USER': os.getenv('DB_USER'),
+    'DB_PASSWORD': os.getenv('DB_PASSWORD'),
+    'DB_DATABASE': os.getenv('DB_DATABASE'),
 }
 
 class HotelService:
     def __init__(self) -> None:
         try:
-            self.db = create_engine(f"mariadb+pymysql://{DB['user']}:{DB['password']}@{DB['address']}/{DB['database']}")
+            self.db = create_engine(f"mariadb+pymysql://{CONFIG['DB_USER']}:{CONFIG['DB_PASSWORD']}@{CONFIG['DB_ADDRESS']}/{CONFIG['DB_DATABASE']}")
             self.metadata = MetaData()
             self.hotel_order_table = Table('hotel_order', self.metadata, autoload_with=self.db)
         except Exception as error:
