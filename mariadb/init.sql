@@ -4,6 +4,7 @@ USE `next-loop`;
 
 CREATE TABLE IF NOT EXISTS `hotel_order` (
     order_seq INT auto_increment NOT NULL,
+    hotel_seq INT NOT NULL,
     room_seq INT NOT NULL,
     customer_seq INT NOT NULL,
     order_price INT DEFAULT 0 NULL,

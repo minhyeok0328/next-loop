@@ -12,4 +12,4 @@ ENV APP_ENV=production
 COPY . /app
 
 # 개발 모드일 때만 --reload 옵션을 사용하도록 설정
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000 $(if [ '$APP_ENV' = 'development' ]; then echo '--reload'; fi)"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]

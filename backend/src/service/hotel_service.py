@@ -18,7 +18,6 @@ class HotelService:
             self.db = create_engine(f"mariadb+pymysql://{DB['user']}:{DB['password']}@{DB['address']}/{DB['database']}")
             self.metadata = MetaData()
             self.hotel_order_table = Table('hotel_order', self.metadata, autoload_with=self.db)
-            print(f'hotel table column: {self.hotel_order_table.columns.keys()}')
         except Exception as error:
             print('Database Connection Error:')
             print(error)
@@ -34,6 +33,14 @@ class HotelService:
             try:
                 for _, row in df.iterrows():
                     row_dict = row.to_dict()
+
+                    # 어떤 호텔의 주문 데이터 인지 구분할 수 있는 값이 없어서 임의로 추가한 값
+                    # mariadb/init.sql의 hotel_list table 참고
+                    row_dict['hotel_seq'] = hotel_seq
+
+                    # 기존 order_seq는 다른 호텔의 order_seq와 중복될 수 있기 때문에 제거
+                    del row_dict['order_seq']
+
                     row_dict = {k: (None if v == '\\N' else v) for k, v in row_dict.items()}
 
                     if 'contents' in row_dict and isinstance(row_dict['contents'], dict):
