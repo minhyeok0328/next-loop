@@ -2,7 +2,9 @@ FROM python:3.13.0
 
 WORKDIR /app
 
-RUN pip install "fastapi[standard]"
+COPY ./requirements.txt /app/requirements.txt
+
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 # 환경 변수 설정: 기본은 production
 ENV APP_ENV=production
