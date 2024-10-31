@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import File, UploadFile
 from src.decorator import controller, get, post
 from src.service import HotelService
@@ -13,8 +14,9 @@ class HotelController:
         return {}
 
     @get('/list')
-    async def list(self):
-        return {}
+    def list(self) -> List[dict]:
+        hotel_list = self.hotel_service.get_hotel_list()
+        return hotel_list
 
     @post('/upload_csv')
     async def upload_csv(self, hotel_seq: int, csv_file: UploadFile = File()):

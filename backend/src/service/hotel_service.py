@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import io
 import json
-from sqlalchemy import Table, create_engine, MetaData, insert
+from sqlalchemy import Table, create_engine, MetaData, insert, select
 from sqlalchemy.exc import SQLAlchemyError
 from dotenv import load_dotenv
 
@@ -21,9 +21,25 @@ class HotelService:
             self.db = create_engine(f"mariadb+pymysql://{CONFIG['DB_USER']}:{CONFIG['DB_PASSWORD']}@{CONFIG['DB_ADDRESS']}/{CONFIG['DB_DATABASE']}")
             self.metadata = MetaData()
             self.hotel_order_table = Table('hotel_order', self.metadata, autoload_with=self.db)
+            self.hotel_list_table = Table('hotel_list', self.metadata, autoload_with=self.db)
         except Exception as error:
-            print('Database Connection Error:')
-            print(error)
+            print(f'Database Connection Error: {error}')
+
+    def get_hotel_list(self):
+        with self.db.connect() as connection:
+            try:
+                trans = connection.begin()
+
+                hotel_list_query = select(self.hotel_list_table).order_by(self.hotel_list_table.c.hotel_name.desc())
+                response = connection.execute(hotel_list_query).fetchall()
+                hotel_list = [dict(row._mapping) for row in response]
+
+                trans.commit()
+                return hotel_list
+            except SQLAlchemyError as e:
+                print(f"get_hotel_list | Database Query Error: {e}")
+                trans.rollback()
+                return []
 
     async def insert_hotel_data_from_csv(self, hotel_seq: int, csv_content: bytes):
         csv_reader = io.StringIO(csv_content.decode('utf-8'))
@@ -41,7 +57,7 @@ class HotelService:
                     # mariadb/init.sql의 hotel_list table 참고
                     row_dict['hotel_seq'] = hotel_seq
 
-                    # 기존 order_seq는 다른 호텔의 order_seq와 중복될 수 있기 때문에 제거
+                    # 기존 csv 파일에 있는 order_seq는 다른 csv 파일의 order_seq와 중복될 수 있기 때문에 제거
                     del row_dict['order_seq']
 
                     row_dict = {k: (None if v == '\\N' else v) for k, v in row_dict.items()}
