@@ -1,3 +1,4 @@
+from datetime import date
 import os
 import pandas as pd
 import io
@@ -24,6 +25,24 @@ class HotelService:
             self.hotel_list_table = Table('hotel_list', self.metadata, autoload_with=self.db)
         except Exception as error:
             print(f'Database Connection Error: {error}')
+            
+    def get_hotel_order_list(self, start_date: date, end_date: date):
+        with self.db.connect() as connection:
+            try:
+                trans = connection.begin()
+
+                hotel_order_query = select(self.hotel_order_table).where(
+                    self.hotel_order_table.c.check_out.between(start_date, end_date)
+                ).order_by(self.hotel_order_table.c.check_out.desc())
+
+                response = [dict(row._mapping) for row in connection.execute(hotel_order_query).fetchall()]
+
+                trans.commit()
+                return response
+            except SQLAlchemyError as e:
+                print(f"get_hotel_order_list | Database Query Error: {e}")
+                trans.rollback()
+                return []
 
     def get_hotel_list(self):
         with self.db.connect() as connection:
@@ -41,7 +60,7 @@ class HotelService:
                 trans.rollback()
                 return []
 
-    async def insert_hotel_data_from_csv(self, hotel_seq: int, csv_content: bytes):
+    def insert_hotel_data_from_csv(self, hotel_seq: int, csv_content: bytes):
         csv_reader = io.StringIO(csv_content.decode('utf-8'))
         csv_reader.seek(0)
 
@@ -69,9 +88,8 @@ class HotelService:
                     connection.execute(insert_query)
 
                 trans.commit()
+                return True
             except SQLAlchemyError as e:
                 trans.rollback()
                 print(f"insert_hotel_data_from_csv | Database Query Error: {e}")
                 return False
-
-        return True
