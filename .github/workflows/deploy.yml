@@ -95,7 +95,7 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
           
-    - name: Deploy backend Changes      
+      - name: Deploy backend Changes      
         run: |
           ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh backend "
@@ -132,7 +132,7 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
           
-    - name: Deploy mariadb Changes      
+      - name: Deploy mariadb Changes      
         run: |
           ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh mariadb "
@@ -169,7 +169,7 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
           
-    - name: Deploy kafka Changes      
+      - name: Deploy kafka Changes      
         run: |
           ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh kafka "
