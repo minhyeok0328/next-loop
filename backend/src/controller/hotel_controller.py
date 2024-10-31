@@ -25,8 +25,8 @@ class HotelController:
         return hotel_list
 
     @post('/upload_csv')
-    def upload_csv(self, hotel_seq: int, csv_file: UploadFile = File()) -> bool:
-        csv_content = csv_file.read()
-        response = self.hotel_service.insert_hotel_data_from_csv(hotel_seq, csv_content)
+    async def upload_csv(self, hotel_seq: int, csv_file: UploadFile = File()) -> bool:
+        csv_content = await csv_file.read()
+        response = await self.hotel_service.insert_hotel_data_from_csv(hotel_seq, csv_content)
 
         return response
