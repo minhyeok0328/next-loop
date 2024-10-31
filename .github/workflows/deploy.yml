@@ -49,18 +49,18 @@ jobs:
       - name: Set up SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
           
       - name: Deploy Airflow Changes
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_HOST '
+          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh airflow "
               if [ ! -d ~/airflow-production/.git ]; then
                 rm -rf ~/airflow-production
@@ -83,21 +83,21 @@ jobs:
     if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
-     - name: Set up SSH
+      - name: Set up SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
           
     - name: Deploy backend Changes      
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_HOST '
+          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh backend "
               if [ ! -d ~/backend-production/.git ]; then
                 rm -rf ~/backend-production
@@ -123,18 +123,18 @@ jobs:
       - name: Set up SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
           
     - name: Deploy mariadb Changes      
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_HOST '
+          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh mariadb "
               if [ ! -d ~/mariadb-production/.git ]; then
                 rm -rf ~/mariadb-production
@@ -160,18 +160,18 @@ jobs:
       - name: Set up SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
           
     - name: Deploy kafka Changes      
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_HOST '
+          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh kafka "
               if [ ! -d ~/kafka-production/.git ]; then
                 rm -rf ~/kafka-production
