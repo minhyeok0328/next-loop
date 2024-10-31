@@ -1,3 +1,4 @@
+#프로메테우스
 global:
   scrape_interval: 15s
 

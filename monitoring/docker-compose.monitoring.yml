@@ -1,5 +1,6 @@
 version: '3.8'
 
+
 services:
   kafka-exporter:
     image: danielqsj/kafka-exporter:latest
