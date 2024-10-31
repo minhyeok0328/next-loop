@@ -1,10 +1,9 @@
 version: '3.8'
-
-
 services:
   kafka-exporter:
-    image: danielqsj/kafka-exporter:latest
-    container_name: kafka-exporter
+    image: danielqsj/kafka-exporter:v1.8.0
+    platform: linux/amd64
+    container_name: kafka-exporter 
     command:
       - "--kafka.server=10.178.0.3:9092"  # Kafka 클러스터 1번 브로커
       - "--kafka.server=10.178.0.7:9092"  # Kafka 클러스터 2번 브로커
@@ -12,10 +11,11 @@ services:
     ports:
       - "9308:9308"  # Prometheus가 스크랩할 Kafka Exporter의 포트
     networks:
-      - kafka_network
+      - kafka_network 
       
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.54.1 
+    platform: linux/amd64
     container_name: prometheus
     ports:
       - "9090:9090"
@@ -28,7 +28,8 @@ services:
       - kafka_network
       
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.0.6
+    platform: linux/amd64
     container_name: grafana
     ports:
       - "3000:3000"
