@@ -146,20 +146,11 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST "\
             echo \"hello github actions\" >> ./test.txt && \
-            if [ ! -d ~/mariadb-production/.git ]; then \
-              rm -rf ~/mariadb-production && \
-              git init ~/mariadb-production && \
-              cd ~/mariadb-production && \
-              git remote add origin $REPO_URL && \
-              git config core.sparseCheckout true && \
-              echo \"mariadb/\" >> .git/info/sparse-checkout && \
-              git pull origin 26-issue-2; \
-            else \
-              cd ~/mariadb-production && \
-              git fetch origin 26-issue-2 && \
-              git checkout 26-issue-2 -- mariadb/; \
-            fi \
-            "
+            cd ~/mariadb-production && \
+            git fetch origin && \
+            git pull origin 26-issue-2 && \
+            git checkout 26-issue-2 -- mariadb/ \
+          "
 
   deploy-kafka:
     needs: detect-changes
