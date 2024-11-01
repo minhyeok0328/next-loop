@@ -9,8 +9,7 @@ services:
     container_name: kafka-exporter 
     command:
       - "--kafka.server=10.178.0.3:9092"  # Kafka 클러스터 1번 브로커
-      - "--kafka.server=10.178.0.7:9092"  # Kafka 클러스터 2번 브로커
-      - "--kafka.server=10.178.0.9:9092"  # Kafka 클러스터 3번 브로커
+      
     ports:
       - "9308:9308"  # Prometheus가 스크랩할 Kafka Exporter의 포트
     networks:
