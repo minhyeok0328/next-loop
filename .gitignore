@@ -89,3 +89,7 @@ docs/_build/
 
 # Airflow
 logs/
+
+# MLflow
+*.pyc
+mlruns/

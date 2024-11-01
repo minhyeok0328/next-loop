@@ -1,16 +1,19 @@
-### config/mlflow_config.py ###
-### gcp instance update ###
-### minIO 자격증명문제 update ###
-
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
+
+# MLflow 환경 설정
+MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI')
+MLFLOW_S3_ENDPOINT_URL = os.getenv('MLFLOW_S3_ENDPOINT_URL')
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+MLFLOW_S3_IGNORE_TLS = os.getenv('MLFLOW_S3_IGNORE_TLS')
+MLFLOW_HTTP_REQUEST_TIMEOUT = os.getenv('MLFLOW_HTTP_REQUEST_TIMEOUT')
 
 EXTERNAL_IP = "34.64.68.155"  #외부IP변경 GCP Instance
 
 # MLflow 설정
-MLFLOW_TRACKING_URI = f"http://localhost:5000"
-MLFLOW_S3_ENDPOINT_URL = f"http://localhost:9000"
 EXPERIMENT_NAME = "pytorch_example"
 MODEL_NAME = "simple_model"
 

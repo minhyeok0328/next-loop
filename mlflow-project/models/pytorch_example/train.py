@@ -23,6 +23,10 @@ import requests
 from config.mlflow_config import (
    MLFLOW_TRACKING_URI,
    MLFLOW_S3_ENDPOINT_URL,
+   AWS_ACCESS_KEY_ID,
+   AWS_SECRET_ACCESS_KEY,
+   MLFLOW_S3_IGNORE_TLS,
+   MLFLOW_HTTP_REQUEST_TIMEOUT,
    EXPERIMENT_NAME,
    MODEL_NAME,
    BATCH_SIZE,
@@ -33,13 +37,14 @@ from config.mlflow_config import (
    OUTPUT_SIZE
 )
 
-# 환경 변수 설정
-os.environ['MLFLOW_TRACKING_URI'] = "http://localhost:5000"
-os.environ['MLFLOW_S3_ENDPOINT_URL'] = "http://localhost:9000"
-os.environ['AWS_ACCESS_KEY_ID'] = 'minio'
-os.environ['AWS_SECRET_ACCESS_KEY'] = 'minio123'
-os.environ['MLFLOW_S3_IGNORE_TLS'] = 'true'
-os.environ['MLFLOW_HTTP_REQUEST_TIMEOUT'] = '300'
+def setup_mlflow_env():
+    """MLflow 환경변수 설정"""
+    os.environ['MLFLOW_TRACKING_URI'] = MLFLOW_TRACKING_URI
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = MLFLOW_S3_ENDPOINT_URL
+    os.environ['AWS_ACCESS_KEY_ID'] = AWS_ACCESS_KEY_ID
+    os.environ['AWS_SECRET_ACCESS_KEY'] = AWS_SECRET_ACCESS_KEY
+    os.environ['MLFLOW_S3_IGNORE_TLS'] = MLFLOW_S3_IGNORE_TLS
+    os.environ['MLFLOW_HTTP_REQUEST_TIMEOUT'] = MLFLOW_HTTP_REQUEST_TIMEOUT
 
 # Session with retry strategy
 session = requests.Session()
@@ -51,13 +56,6 @@ retry_strategy = Retry(
 adapter = HTTPAdapter(max_retries=retry_strategy)
 session.mount("http://", adapter)
 session.mount("https://", adapter)
-
-# 설정 확인 출력
-print("=== Environment Settings ===")
-print(f"AWS Access Key: {os.getenv('AWS_ACCESS_KEY_ID')}")
-print(f"MinIO Endpoint: {os.getenv('MLFLOW_S3_ENDPOINT_URL')}")
-print(f"MLflow URI: {os.getenv('MLFLOW_TRACKING_URI')}")
-print("========================")
 
 # 로깅 설정
 logging.basicConfig(
@@ -249,21 +247,24 @@ def train_model():
 
 def test_mlflow_connection():
    try:
-       print("Testing MLflow connection...")
+       logging.info("Testing MLflow connection...")
        client = mlflow.tracking.MlflowClient()
        experiments = client.search_experiments()
-       print("MLflow connection successful!")
+       logging.info("MLflow connection successful!")
        return experiments
    except Exception as e:
-       print(f"MLflow connection failed: {str(e)}")
+       logging.info(f"MLflow connection failed: {str(e)}")
        raise
 
 if __name__ == "__main__":
    try:
+       # MLflow 환경 설정
+       setup_mlflow_env()
+
        # 연결 테스트
        test_mlflow_connection()
        
-       print("Starting training...")
+       logging.info("Starting training...")
        model_info = train_model()
        logging.info("Training completed successfully!")
    except Exception as e:
