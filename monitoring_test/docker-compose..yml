@@ -1,6 +1,5 @@
 #플랫폼, 도커이미지 버전 명시 파일입니다.
 
-
 version: '3.8'
 services:
   kafka-exporter:
@@ -8,7 +7,7 @@ services:
     platform: linux/amd64
     container_name: kafka-exporter 
     command:
-      - "--kafka.server=10.178.0.3:9092"  # Kafka 클러스터 1번 브로커
+      - "--kafka.server=10.178.0.3:9092"  # 클러스터구축 되어있기 때문에 Kafka 1번 브로커만 남겨둠
       
     ports:
       - "9308:9308"  # Prometheus가 스크랩할 Kafka Exporter의 포트

@@ -1,4 +1,4 @@
-#프로메테우스 파일입니다
+#프로메테우스 파일
 global:
   scrape_interval: 15s
 
