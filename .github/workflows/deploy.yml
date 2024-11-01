@@ -149,7 +149,7 @@ jobs:
             cd ~/mariadb-production && \
             git fetch origin && \
             git pull origin 26-issue-2 && \
-            git checkout 26-issue-2 -- mariadb/ \
+            git checkout 26-issue-2 \
           "
 
   deploy-kafka:
