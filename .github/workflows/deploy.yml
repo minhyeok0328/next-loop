@@ -66,7 +66,7 @@ jobs:
                 rm -rf ~/airflow-production
                 git init ~/airflow-production
                 cd ~/airflow-production
-                git remote add origin $REPO_URL  # 여기서 REPO_URL 사용
+                git remote add origin $REPO_URL
                 git config core.sparseCheckout true
                 echo 'airflow/' >> .git/info/sparse-checkout
                 git pull origin 26-issue-2
@@ -103,7 +103,7 @@ jobs:
                 rm -rf ~/backend-production
                 git init ~/backend-production
                 cd ~/backend-production
-                git remote add origin $REPO_URL  # 여기서 REPO_URL 사용
+                git remote add origin $REPO_URL
                 git config core.sparseCheckout true
                 echo 'backend/' >> .git/info/sparse-checkout
                 git pull origin 26-issue-2
@@ -136,11 +136,12 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
             ssh mariadb "
+              echo "hello github actions" >> ./test.txt
               if [ ! -d ~/mariadb-production/.git ]; then
                 rm -rf ~/mariadb-production
                 git init ~/mariadb-production
                 cd ~/mariadb-production
-                git remote add origin $REPO_URL  # 여기서 REPO_URL 사용
+                git remote add origin $REPO_URL
                 git config core.sparseCheckout true
                 echo 'mariadb/' >> .git/info/sparse-checkout
                 git pull origin 26-issue-2
@@ -177,7 +178,7 @@ jobs:
                 rm -rf ~/kafka-production
                 git init ~/kafka-production
                 cd ~/kafka-production
-                git remote add origin $REPO_URL  # 여기서 REPO_URL 사용
+                git remote add origin $REPO_URL
                 git config core.sparseCheckout true
                 echo 'kafka/' >> .git/info/sparse-checkout
                 git pull origin 26-issue-2
