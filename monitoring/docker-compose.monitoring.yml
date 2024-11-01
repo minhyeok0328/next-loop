@@ -1,0 +1,54 @@
+#플랫폼, 도커이미지 버전 명시 파일
+version: '3.8'
+services:
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.8.0
+    platform: linux/amd64
+    container_name: kafka-exporter 
+    command:
+      - "--kafka.server=10.178.0.3:9092"  # 클러스터구축 → 1번 브로커만 남겨둠
+      
+    ports:
+      - "9308:9308"  # Prometheus가 스크랩할 Kafka Exporter의 포트
+    networks:
+      - kafka_network 
+      
+  prometheus:
+    image: prom/prometheus:v2.54.1 
+    platform: linux/amd64
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Prometheus 설정 파일 마운트
+      - prometheus-storage:/prometheus  # Prometheus 데이터를 저장할 볼륨
+    depends_on:
+      - kafka-exporter
+    networks:
+      - kafka_network
+      
+  grafana:
+    image: grafana/grafana:11.0.6
+    platform: linux/amd64
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    restart: always
+    networks:
+      - kafka_network
+
+volumes:
+  prometheus-storage:
+  grafana-storage:
+
+networks:
+  kafka_network:
+    name: kafka_network
+    driver: bridge
