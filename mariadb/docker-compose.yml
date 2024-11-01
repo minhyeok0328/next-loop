@@ -1,6 +1,6 @@
 services:
   mariadb:
-    image: mariadb:latest
+    image: mariadb:11.5.2
     container_name: mariadb
     environment:
       MYSQL_DATABASE: next-loop

@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     ports:
-      - "8000:8000"
+      - "80:80"
     environment:
       - APP_ENV=production
-    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000"
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 80"
