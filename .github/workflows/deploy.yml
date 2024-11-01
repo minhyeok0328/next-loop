@@ -132,8 +132,17 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
       - name: Test SSH Connection
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
         run: |
-          ssh -v -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST 'echo "Connection successful"'    
+          # 환경 변수 값 확인 (실제 값은 **로 마스킹됨)
+          echo "SERVER_USERNAME is set: $(if [ -n "$SERVER_USERNAME" ]; then echo "yes"; else echo "no"; fi)"
+          echo "SERVER_MARIADB_HOST is set: $(if [ -n "$SERVER_MARIADB_HOST" ]; then echo "yes"; else echo "no"; fi)"
+          
+          # SSH 연결 테스트
+          ssh -v -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST 'echo "Connection successful"'
       # - name: Deploy mariadb Changes      
       #   run: |
       #     ssh -v -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
