@@ -31,5 +31,3 @@ services:
       - kafka_network
     volumes:
       - kafka_volume:/var/lib/kafka/data
-
-# 1111

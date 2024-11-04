@@ -19,6 +19,3 @@ def generate_dag():
         EmptyOperator(task_id="task22")
 
 generate_dag()
-
-
-# dags1
