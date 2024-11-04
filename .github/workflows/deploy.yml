@@ -51,7 +51,7 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git checkout 26-issue-2 \
+          git checkout 26-issue-2 && \
           echo "airflow changes deployed successfully."
 
   deploy-backend:
@@ -64,7 +64,7 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git checkout 26-issue-2 \
+          git checkout 26-issue-2 && \
           echo "backend changes deployed successfully."
 
   deploy-mariadb:
@@ -77,7 +77,7 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git checkout 26-issue-2 \
+          git checkout 26-issue-2 && \
           echo "mariadb changes deployed successfully."
           
 
@@ -91,7 +91,8 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git checkout 26-issue-2 -- . ':!kafka/kafka-cluster-2.yml' ':!kafka/kafka-cluster-3.yml' && \
+          git restore --source=26-issue-2 --staged . && \
+          git restore --source=26-issue-2 --worktree -- . ':!kafka/kafka-cluster-2.yml' ':!kafka/kafka-cluster-3.yml' && \
           echo "Kafka-1 changes deployed successfully."
 
   deploy-kafka-2:
@@ -104,8 +105,9 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git checkout 26-issue-2 -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-3.yml' && \
-          echo "Kafka-2 changes deployed successfully."
+          git restore --source=26-issue-2 --staged . && \
+          git restore --source=26-issue-2 --worktree -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-3.yml' && \
+          echo "Kafka-1 changes deployed successfully."
 
   deploy-kafka-3:
     needs: detect-changes
@@ -117,5 +119,6 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git checkout 26-issue-2 -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-2.yml' && \
-          echo "Kafka-3 changes deployed successfully."
+          git restore --source=26-issue-2 --staged . && \
+          git restore --source=26-issue-2 --worktree -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-2.yml' && \
+          echo "Kafka-1 changes deployed successfully."
