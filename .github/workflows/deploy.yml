@@ -10,6 +10,7 @@ on:
       - 'backend/**'
       - 'kafka/**'
       - 'mariadb/**'
+  workflow_dispatch:  # 수동 트리거 추가
 
 jobs:
   detect-changes:
