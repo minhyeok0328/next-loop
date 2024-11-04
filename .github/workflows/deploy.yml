@@ -11,16 +11,15 @@ on:
       - 'kafka/**'
       - 'mariadb/**'
   workflow_dispatch:  # 수동 트리거 추가
-    branches:
-      - '26-issue-2'
 
 jobs:
   detect-changes:
-    if: >
+    f: >
       (github.event_name == 'pull_request' && 
        github.event.pull_request.merged == true && 
        github.event.pull_request.base.ref == '26-issue-2') ||
-      github.event_name == 'workflow_dispatch'
+      (github.event_name == 'workflow_dispatch' && 
+       github.ref == 'refs/heads/26-issue-2')
     runs-on: ubuntu-latest
     outputs:
       airflow: ${{ steps.filter.outputs.airflow }}
