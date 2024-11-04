@@ -91,8 +91,8 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git restore --source=26-issue-2 --staged . && \
-          git restore --source=26-issue-2 --worktree -- . ':!kafka/kafka-cluster-2.yml' ':!kafka/kafka-cluster-3.yml' && \
+          git checkout 26-issue-2 && \
+          rm -f kafka/kafka-cluster-2.yml kafka/kafka-cluster-3.yml && \
           echo "Kafka-1 changes deployed successfully."
 
   deploy-kafka-2:
@@ -105,8 +105,8 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git restore --source=26-issue-2 --staged . && \
-          git restore --source=26-issue-2 --worktree -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-3.yml' && \
+          git checkout 26-issue-2 && \
+          rm -f kafka/kafka-cluster-1.yml kafka/kafka-cluster-3.yml && \
           echo "Kafka-1 changes deployed successfully."
 
   deploy-kafka-3:
@@ -119,6 +119,6 @@ jobs:
           cd ~/production && \
           git fetch origin && \
           git pull origin 26-issue-2 && \
-          git restore --source=26-issue-2 --staged . && \
-          git restore --source=26-issue-2 --worktree -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-2.yml' && \
+          git checkout 26-issue-2 && \
+          rm -f kafka/kafka-cluster-1.yml kafka/kafka-cluster-2.yml && \
           echo "Kafka-1 changes deployed successfully."
