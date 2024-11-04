@@ -32,5 +32,4 @@ services:
     volumes:
       - kafka_volume:/var/lib/kafka/data
 
-~
-~
+# 2

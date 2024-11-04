@@ -44,147 +44,78 @@ jobs:
   deploy-airflow:
     needs: detect-changes
     if: needs.detect-changes.outputs.airflow == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, airflow]
     steps:
-      - name: Set up SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-          REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
-          
       - name: Deploy Airflow Changes
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
-            ssh airflow "
-              if [ ! -d ~/airflow-production/.git ]; then
-                rm -rf ~/airflow-production
-                git init ~/airflow-production
-                cd ~/airflow-production
-                git remote add origin $REPO_URL
-                git config core.sparseCheckout true
-                echo 'airflow/' >> .git/info/sparse-checkout
-                git pull origin 26-issue-2
-              else
-                cd ~/airflow-production
-                git fetch origin 26-issue-2
-                git checkout 26-issue-2 -- airflow/
-              fi
-            "
-          '
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin 26-issue-2 && \
+          git checkout 26-issue-2 \
+          echo "airflow changes deployed successfully."
 
   deploy-backend:
     needs: detect-changes
     if: needs.detect-changes.outputs.backend == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, backend]
     steps:
-      - name: Set up SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-          REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
-          
       - name: Deploy backend Changes      
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
-            ssh backend "
-              if [ ! -d ~/backend-production/.git ]; then
-                rm -rf ~/backend-production
-                git init ~/backend-production
-                cd ~/backend-production
-                git remote add origin $REPO_URL
-                git config core.sparseCheckout true
-                echo 'backend/' >> .git/info/sparse-checkout
-                git pull origin 26-issue-2
-              else
-                cd ~/backend-production
-                git fetch origin 26-issue-2
-                git checkout 26-issue-2 -- backend/
-              fi
-            "
-          '
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin 26-issue-2 && \
+          git checkout 26-issue-2 \
+          echo "backend changes deployed successfully."
 
   deploy-mariadb:
     needs: detect-changes
     if: needs.detect-changes.outputs.mariadb == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mariadb]
     steps:
-      - name: Set up SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-          REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
-      - name: Test Second SSH Connection
-        env:
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST "echo test"
-
       - name: Deploy mariadb Changes      
-        env:
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
-          REPO_URL: ${{ secrets.REPO_URL }}
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST "\
-            echo \"hello github actions\" >> ./test.txt && \
-            cd ~/mariadb-production && \
-            git fetch origin && \
-            git pull origin 26-issue-2 && \
-            git checkout 26-issue-2 \
-          "
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin 26-issue-2 && \
+          git checkout 26-issue-2 \
+          echo "mariadb changes deployed successfully."
+          
 
-  deploy-kafka:
+  deploy-kafka-1:
     needs: detect-changes
     if: needs.detect-changes.outputs.kafka == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, kafka-1]
     steps:
-      - name: Set up SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_MARIADB_HOST: ${{ secrets.SERVER_MARIADB_HOST }}
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-          REPO_URL: ${{ secrets.REPO_URL }}  # REPO_URL 환경 변수 설정
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $SERVER_MARIADB_HOST >> ~/.ssh/known_hosts
-          
       - name: Deploy kafka Changes      
         run: |
-          ssh -i ~/.ssh/deploy_key $SERVER_USERNAME@$SERVER_MARIADB_HOST '
-            ssh kafka "
-              if [ ! -d ~/kafka-production/.git ]; then
-                rm -rf ~/kafka-production
-                git init ~/kafka-production
-                cd ~/kafka-production
-                git remote add origin $REPO_URL
-                git config core.sparseCheckout true
-                echo 'kafka/' >> .git/info/sparse-checkout
-                git pull origin 26-issue-2
-              else
-                cd ~/kafka-production
-                git fetch origin 26-issue-2
-                git checkout 26-issue-2 -- kafka/
-              fi
-            "
-          '
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin 26-issue-2 && \
+          git checkout 26-issue-2 -- . ':!kafka/kafka-cluster-2.yml' ':!kafka/kafka-cluster-3.yml' && \
+          echo "Kafka-1 changes deployed successfully."
+
+  deploy-kafka-2:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.kafka == 'true'
+    runs-on: [self-hosted, kafka-2]
+    steps:
+      - name: Deploy kafka Changes      
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin 26-issue-2 && \
+          git checkout 26-issue-2 -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-3.yml' && \
+          echo "Kafka-2 changes deployed successfully."
+
+  deploy-kafka-3:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.kafka == 'true'
+    runs-on: [self-hosted, kafka-3]
+    steps:
+      - name: Deploy kafka Changes      
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin 26-issue-2 && \
+          git checkout 26-issue-2 -- . ':!kafka/kafka-cluster-1.yml' ':!kafka/kafka-cluster-2.yml' && \
+          echo "Kafka-3 changes deployed successfully."
