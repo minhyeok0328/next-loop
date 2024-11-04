@@ -1,0 +1,125 @@
+name: Issue Branch Deploy
+
+on:
+  pull_request:
+    types: [closed]
+    branches: 
+      - 'main'
+    paths:
+      - 'airflow/**'
+      - 'backend/**'
+      - 'kafka/**'
+      - 'mariadb/**'
+  workflow_dispatch:  # 수동 트리거 추가
+
+jobs:
+  detect-changes:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    outputs:
+      airflow: ${{ steps.filter.outputs.airflow }}
+      backend: ${{ steps.filter.outputs.backend }}
+      kafka: ${{ steps.filter.outputs.kafka }}
+      mariadb: ${{ steps.filter.outputs.mariadb }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: 'main'
+
+      - name: Filter paths for each component
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            airflow:
+              - 'airflow/**'
+            backend:
+              - 'backend/**'
+            kafka:
+              - 'kafka/**'
+            mariadb:
+              - 'mariadb/**'
+
+  deploy-airflow:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.airflow == 'true'
+    runs-on: [self-hosted, airflow]
+    steps:
+      - name: Deploy Airflow Changes
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin main && \
+          git checkout main && \
+          echo "airflow changes deployed successfully."
+
+  deploy-backend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: [self-hosted, backend]
+    steps:
+      - name: Deploy backend Changes      
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin main && \
+          git checkout main && \
+          echo "backend changes deployed successfully."
+
+  deploy-mariadb:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mariadb == 'true'
+    runs-on: [self-hosted, mariadb]
+    steps:
+      - name: Deploy mariadb Changes      
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin main && \
+          git checkout main && \
+          echo "mariadb changes deployed successfully."
+          
+
+  deploy-kafka-1:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.kafka == 'true'
+    runs-on: [self-hosted, kafka-1]
+    steps:
+      - name: Deploy kafka Changes      
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin main && \
+          git checkout main && \
+          rm -f kafka/kafka-cluster-2.yml kafka/kafka-cluster-3.yml && \
+          echo "Kafka-1 changes deployed successfully."
+
+  deploy-kafka-2:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.kafka == 'true'
+    runs-on: [self-hosted, kafka-2]
+    steps:
+      - name: Deploy kafka Changes      
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin main && \
+          git checkout main && \
+          rm -f kafka/kafka-cluster-1.yml kafka/kafka-cluster-3.yml && \
+          echo "Kafka-1 changes deployed successfully."
+
+  deploy-kafka-3:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.kafka == 'true'
+    runs-on: [self-hosted, kafka-3]
+    steps:
+      - name: Deploy kafka Changes      
+        run: |
+          cd ~/production && \
+          git fetch origin && \
+          git pull origin main && \
+          git checkout main && \
+          rm -f kafka/kafka-cluster-1.yml kafka/kafka-cluster-2.yml && \
+          echo "Kafka-1 changes deployed successfully."
