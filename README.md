@@ -1,4 +1,1 @@
-
-![pileline-architecture](https://github.com/user-attachments/assets/af197fa4-ae47-42f5-814c-d8f03f92eaae)
-
-
+![dowhat-pileline drawio](https://github.com/user-attachments/assets/51e2365e-6fff-4f42-91b8-5bd35ccd61a1)
