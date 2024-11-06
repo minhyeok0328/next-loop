@@ -2,6 +2,13 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'kafka_exporter'
+  - job_name: 'kafka-exporter'
     static_configs:
-      - targets: ['34.64.141.221:9308']
+      - targets: ['kafka-exporter:9308']
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: 
+          - '172.27.176.231:9100'  # airflow 서버의 Node Exporter
+          - '172.27.176.231:9101'  # backend 서버의 Node Exporter
+          #- '172.27.176.231:9102'  # 3번 서버의 Node Exporter

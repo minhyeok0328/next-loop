@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "80:80"
+    environment:
+      - APP_ENV=production
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 80"
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node-exporter-backend
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--web.listen-address=:9101'  # 각 서버에 맞는 포트로 설정
+    ports:
+      - 9101:9101
+
