@@ -1,36 +1,26 @@
 #플랫폼, 도커이미지 버전 명시 파일
 version: '3.8'
 services:
-  kafka-exporter:
-    image: danielqsj/kafka-exporter:v1.8.0
-    platform: linux/amd64
-    container_name: kafka-exporter 
-    command:
-      - "--kafka.server=10.178.0.3:9092"  # 클러스터구축 → 1번 브로커만 남겨둠
+
+  # monitoring 서버에 node-exporter를 설치할 필요는 없을 것 같아서 일단 주석처리
+  # node-exporter:
+  #   image: prom/node-exporter:v1.8.1
+  #   container_name: node-exporter-monitoring
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/rootfs:ro
+  #   command:
+  #     - '--path.procfs=/host/proc'
+  #     - '--path.rootfs=/rootfs'
+  #     - '--path.sysfs=/host/sys'
+  #     - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+  #     - '--web.listen-address=:9100'  
+  #   ports:
+  #     - "9100:9100" 
+    
       
-    ports:
-      - "9308:9308"  # Prometheus가 스크랩할 Kafka Exporter의 포트
-    networks:
-      - kafka_network 
-
-# monitoring 서버에 node-exporter를 설치할 필요는 없을 것 같아서 일단 주석처리
-# node-exporter:
-#     image: prom/node-exporter:v1.8.1
-#     container_name: node-exporter-monitoring
-#     restart: unless-stopped
-#     volumes:
-#       - /proc:/host/proc:ro
-#       - /sys:/host/sys:ro
-#       - /:/rootfs:ro
-#     command:
-#       - '--path.procfs=/host/proc'
-#       - '--path.rootfs=/rootfs'
-#       - '--path.sysfs=/host/sys'
-#       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-#       - '--web.listen-address=:9102' # 로컬에서는 포트가 달라야 함.  
-#     ports:
-#       - "9102:9102"  # 로컬에서는 포트가 달라야 함. 
-
   prometheus:
     image: prom/prometheus:v2.54.1 
     platform: linux/amd64
@@ -40,8 +30,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Prometheus 설정 파일 마운트
       - prometheus-storage:/prometheus  # Prometheus 데이터를 저장할 볼륨
-    depends_on:
-      - kafka-exporter
+    
     networks:
       - kafka_network
       

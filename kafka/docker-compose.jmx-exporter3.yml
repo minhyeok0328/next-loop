@@ -1,0 +1,46 @@
+volumes:
+  kafka_volume:
+    driver: local
+
+networks:
+  kafka_network:
+    name: kafka_network
+    driver: bridge
+
+services:
+  kafka:
+    image: apache/kafka:3.7.1
+    container_name: kafka-cluster-3
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 3
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@10.178.0.3:9093,2@10.178.0.7:9093,3@10.178.0.9:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://10.178.0.9:9092
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_RETENTION_MS: 432000 # 5일
+      CLUSTER_ID: 'jaShGO9YR12vntLHlWQQBA'
+    networks:
+      - kafka_network
+    volumes:
+      - kafka_volume:/var/lib/kafka/data
+
+
+  jmx-exporter:
+    image: bitnami/jmx-exporter:0.20.0
+    container_name: jmx-exporter-3
+    environment:
+      - JVM_OPTS=-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=5556:/opt/jmx-exporter/config.yaml
+    ports:
+      - "5556:5556"
+    networks:
+      - kafka_network
+
+# 3333
