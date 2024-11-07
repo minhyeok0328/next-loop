@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'spark_master'
+    static_configs:
+      - targets: ['spark-master:8080']
+        labels:
+          service: 'master'
+
+  - job_name: 'spark_workers'
+    static_configs:
+      - targets: ['spark-worker-1:8081', 'spark-worker-2:8081']
+        labels:
+          service: 'workers'
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'database'
