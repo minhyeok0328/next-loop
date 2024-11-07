@@ -13,6 +13,7 @@ services:
     networks:
       - kafka_network 
 
+# monitoring 서버에 node-exporter를 설치할 필요는 없을 것 같아서 일단 주석처리
 # node-exporter:
 #     image: prom/node-exporter:v1.8.1
 #     container_name: node-exporter-monitoring
@@ -26,9 +27,9 @@ services:
 #       - '--path.rootfs=/rootfs'
 #       - '--path.sysfs=/host/sys'
 #       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-#       - '--web.listen-address=:9102'  # 각 서버에 맞는 포트로 설정
+#       - '--web.listen-address=:9102' # 로컬에서는 포트가 달라야 함.  
 #     ports:
-#       - "9102:9102"   
+#       - "9102:9102"  # 로컬에서는 포트가 달라야 함. 
 
   prometheus:
     image: prom/prometheus:v2.54.1 

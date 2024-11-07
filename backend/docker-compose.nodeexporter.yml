@@ -25,7 +25,7 @@ services:
       - '--path.rootfs=/rootfs'
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-      - '--web.listen-address=:9101'  # 각 서버에 맞는 포트로 설정
+      - '--web.listen-address=:9101'  # 로컬에서는 포트가 달라야 함. 
     ports:
-      - 9101:9101
+      - 9101:9101 # 로컬에서는 포트가 달라야 함. 
 
