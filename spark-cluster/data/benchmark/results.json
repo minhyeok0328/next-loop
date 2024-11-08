@@ -1,0 +1,10 @@
+{
+  "\uae30\ubcf8 Parquet \uc4f0\uae30": 7.70301628112793,
+  "GZIP \uc555\ucd95 Parquet \uc4f0\uae30": 2.3508472442626953,
+  "SNAPPY \uc555\ucd95 Parquet \uc4f0\uae30": 1.5105314254760742,
+  "\ud30c\ud2f0\uc154\ub2dd\ub41c Parquet \uc4f0\uae30": 3.4158849716186523,
+  "\uc804\uccb4 \ub370\uc774\ud130 \uc77d\uae30": 1.1080431938171387,
+  "GZIP \uc555\ucd95 \ub370\uc774\ud130 \uc77d\uae30": 0.2839059829711914,
+  "SNAPPY \uc555\ucd95 \ub370\uc774\ud130 \uc77d\uae30": 0.27245283126831055,
+  "\ud30c\ud2f0\uc158 \ud544\ud130\ub9c1 \uc77d\uae30": 0.5391452312469482
+}
