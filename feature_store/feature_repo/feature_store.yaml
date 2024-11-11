@@ -1,0 +1,8 @@
+project: feature_store  
+registry:
+  path: gs://dowhat-de1-feature-store/registry.pb
+  cache_ttl_seconds: 60
+provider: gcp
+online_store: null
+offline_store:
+  type: dask
