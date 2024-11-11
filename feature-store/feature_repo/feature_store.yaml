@@ -1,0 +1,7 @@
+project: next-loop
+registry:
+  path: gs://dowhat-de1-feature-store/registry.pb
+  cache_ttl_seconds: 60
+online_store: null
+offline_store:
+  type: dask
