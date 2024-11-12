@@ -1,5 +1,4 @@
 ### GCS - Spark - Feast Cluster pipeline with Airflow ###
-### GCS - Spark - Feast Cluster pipeline with Airflow ###
 version: '3'
 
 services:

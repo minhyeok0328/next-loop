@@ -1,42 +1,56 @@
-# dags/gcs_spark_test.py
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
-from pyspark.sql import SparkSession
-import os
+from config.spark_conf import create_spark_session, stop_spark_session
+from airflow.models import Variable
+import logging
 
 def test_gcs_spark_connection():
-    """GCS와 Spark 연결 테스트"""
-    # Spark 세션 생성
-    spark = SparkSession.builder \
-        .appName("GCS_Spark_Test") \
-        .master(os.getenv('SPARK_MASTER_URL')) \
-        .config('spark.jars', '/opt/airflow/jars/gcs-connector-hadoop3-latest.jar') \
-        .config('spark.hadoop.google.cloud.auth.service.account.enable', 'true') \
-        .config('spark.hadoop.google.cloud.auth.service.account.json.keyfile', 
-                os.getenv('GOOGLE_APPLICATION_CREDENTIALS')) \
-        .getOrCreate()
-
+    """
+    GCS와 Spark 연결 테스트를 위한 함수
+    """
+    spark = None
+    temp_credentials_path = None
+    
     try:
+        # Spark 세션 생성
+        spark, temp_credentials_path = create_spark_session("GCS_Spark_Test")
+        
         # 테스트용 간단한 DataFrame 생성
-        test_data = [("1", "test")]
-        df = spark.createDataFrame(test_data, ["id", "value"])
+        test_data = [
+            ("1", "test_1", "2024-01-01"),
+            ("2", "test_2", "2024-01-02"),
+            ("3", "test_3", "2024-01-03")
+        ]
+        df = spark.createDataFrame(test_data, ["id", "value", "date"])
         
         # GCS에 쓰기 테스트
-        bucket_name = os.getenv('GCP_BUCKET_NAME')
-        df.write.mode("overwrite").parquet(f"gs://{bucket_name}/test-connection/")
+        bucket_name = Variable.get("gcp_bucket_name")
+        output_path = f"gs://{bucket_name}/test-connection/"
+        
+        logging.info(f"Attempting to write to GCS bucket: {bucket_name}")
+        
+        # Parquet 형식으로 저장 (파티셔닝 적용)
+        df.write \
+          .mode("overwrite") \
+          .partitionBy("date") \
+          .parquet(output_path)
+        
+        logging.info("Successfully wrote data to GCS")
         
         # GCS에서 읽기 테스트
-        read_df = spark.read.parquet(f"gs://{bucket_name}/test-connection/")
-        print("데이터 읽기 성공:")
+        read_df = spark.read.parquet(output_path)
+        logging.info("Successfully read data from GCS:")
         read_df.show()
         
         return "연결 테스트 성공!"
+    
     except Exception as e:
-        print(f"Error: {str(e)}")
+        logging.error(f"Error in GCS Spark test: {str(e)}")
         raise
+    
     finally:
-        spark.stop()
+        stop_spark_session(spark, temp_credentials_path)
 
 default_args = {
     'owner': 'airflow',
