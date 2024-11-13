@@ -89,3 +89,4 @@ docs/_build/
 
 # Airflow
 logs/
+*.db

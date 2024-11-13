@@ -23,15 +23,18 @@ def create_spark_session(app_name="GCS_Spark_App"):
         # Spark 세션 생성
         spark = (SparkSession.builder
             .appName(app_name)
-            .master('local[*]')
+            #.master('local[*]')   주석처리하고 클러스터 모드 사용
             .config('spark.jars', '/opt/airflow/jars/gcs-connector-hadoop3-latest.jar')
             .config('spark.hadoop.google.cloud.auth.service.account.enable', 'true')
             .config('spark.hadoop.google.cloud.auth.service.account.json.keyfile', temp_credentials_path)
             .config('spark.hadoop.fs.gs.impl', 'com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem')
             .config('spark.hadoop.fs.AbstractFileSystem.gs.impl', 'com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS')
             # 메모리 설정
-            .config('spark.driver.memory', '2g')
-            .config('spark.executor.memory', '2g')
+            .config('spark.driver.memory', '1g')
+            .config('spark.executor.memory', '1g')
+            .config('spark.executor.cores', '1')
+            .config('spark.executor.instances', '2')
+            .config('spark.dynamicAllocation.enabled', 'false')  # 명시적으로 동적 할당 비활성화
             .getOrCreate())
         
         return spark, temp_credentials_path
