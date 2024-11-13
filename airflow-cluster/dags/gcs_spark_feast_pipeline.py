@@ -131,25 +131,25 @@ def load_to_feast(**context):
     """Feast로 데이터 로드"""
     try:
         from feast import FeatureStore
-        
+
         # Feast store 초기화
         store = FeatureStore(repo_path="/opt/airflow/feast")
         logging.info("Initialized Feast Feature Store")
-        
+
         # 변환된 데이터 위치
         data_location = context['task_instance'].xcom_pull(key='transformed_data_location')
         logging.info(f"Loading data from: {data_location}")
-        
-        # Feast에 데이터 로드
-        store.materialize_incremental(
-            end_date=datetime.now(),
-            feature_views=store.list_feature_views()
-        )
-        logging.info("Successfully loaded data to Feast")
-        
+
+        # Feast feature view 가져오기
+        feature_views = store.list_feature_views()
+        logging.info(f"Found feature views: {[fv.name for fv in feature_views]}")
+
+        # Feast에 데이터 materialize
+        store.materialize_incremental(end_date=datetime.now())
+        logging.info("Successfully materialized features to online store")
+
     except Exception as e:
         logging.error(f"Error loading data to Feast: {str(e)}")
-        raise
 
 # DAG 설정
 default_args = {

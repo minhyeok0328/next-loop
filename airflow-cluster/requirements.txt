@@ -1,5 +1,5 @@
 pyspark==3.4.2
-feast
+feast==0.34.1
 google-cloud-storage
 apache-airflow-providers-openlineage==1.8.0
 apache-airflow-providers-apache-spark==4.1.5

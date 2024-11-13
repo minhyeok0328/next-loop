@@ -28,6 +28,7 @@ services:
       - ./airflow:/opt/airflow/airflow
       - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
       - ./jars:/opt/airflow/jars
+      - ./feast_data:/opt/airflow/feast_data
     command: bash -c "airflow db init && airflow db migrate && airflow users create --username admin --firstname admin --lastname admin --role Admin --email admin@example.com --password admin && airflow webserver"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
@@ -61,5 +62,6 @@ services:
       - ./airflow:/opt/airflow/airflow
       - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
       - ./jars:/opt/airflow/jars
+      - ./feast_data:/opt/airflow/feast_data
     command: bash -c "airflow db upgrade && airflow scheduler"
     restart: always

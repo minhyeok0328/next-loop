@@ -1,8 +1,9 @@
-project: your_project_name
-registry: data/registry.db
-provider: local
+project: dowhat_hotel_features
+registry: gs://dowhat-de1-feature-store/registry.db
+provider: gcp
+project_id: de1jo-nextloop
 online_store:
     type: sqlite
-    path: data/online_store.db
+    path: /opt/airflow/feast_data/feast.db
 offline_store:
-    type: file
+    type: bigquery
