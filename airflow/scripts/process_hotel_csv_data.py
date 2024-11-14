@@ -1,6 +1,10 @@
+import logging
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json, lit, when
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType
+
+logger = logging.getLogger(__name__)
 
 # Spark Session 생성
 spark = SparkSession.builder \
@@ -20,13 +24,22 @@ contents_schema = StructType([
     StructField("wantEnd", StringType(), True)
 ])
 
-def main(input_files, output_path):
+def main(input_files_str, output_path):
+    input_files = input_files_str.join(',')
+    
     # CSV 파일 불러오기
+    if not input_files:
+        raise ValueError("No input files provided")
+
+    logger.info(f"Processing files: {input_files}")
+
     df = None
     for file in input_files:
         temp_df = spark.read.csv(file, header=True, inferSchema=True)
         df = temp_df if df is None else df.union(temp_df)
     
+    logger.info("CSV files loaded successfully")
+
     # 데이터 전처리
     df = df.withColumn("order_seq", col("order_seq").cast("int")) \
            .withColumn("order_price", col("order_price").cast("int")) \
@@ -38,13 +51,17 @@ def main(input_files, output_path):
            .withColumn("refuse_date", when(col("refuse_date") != "\\N", col("refuse_date")).cast("timestamp")) \
            .withColumn("complete_date", when(col("complete_date") != "\\N", col("complete_date")).cast("timestamp")) \
            .withColumn("contents", from_json(col("contents"), contents_schema)) \
-           .dropna()  # 결측치 제거 (필요 시 더 정교한 처리가 가능)
+           .dropna()
+
+    logger.info("Data processing completed")
 
     # 결과를 Parquet 파일로 저장
     df.write.parquet(output_path)
 
+    logger.info(f"Parquet file saved at: {output_path}")
+
 if __name__ == "__main__":
     import sys
-    input_files = sys.argv[1:-1]
+    input_files_str = sys.argv[1:-1]
     output_path = sys.argv[-1]
-    main(input_files, output_path)
+    main(input_files_str, output_path)
