@@ -1,10 +1,13 @@
 # utils/mlflow.py
+from dotenv import load_dotenv
+import os
 import mlflow
 from mlflow.tracking import MlflowClient
 import time
+load_dotenv()
 
 def setup_mlflow(experiment_name):
-    mlflow.set_tracking_uri("http://10.178.0.10:5000")
+    mlflow.set_tracking_uri(os.environ['set_tracking_uri'])
     mlflow.set_experiment(experiment_name)
 
 def set_model_alias(client, name, version, alias):
