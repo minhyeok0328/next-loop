@@ -31,3 +31,16 @@ services:
       - kafka_network
     volumes:
       - kafka_volume:/var/lib/kafka/data
+
+
+  jmx-exporter:
+    image: bitnami/jmx-exporter:0.20.0
+    container_name: jmx-exporter-3
+    environment:
+      - JVM_OPTS=-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=5556:/opt/jmx-exporter/config.yaml
+    ports:
+      - "5556:5556"
+    networks:
+      - kafka_network
+
+# 3333
