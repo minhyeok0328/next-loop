@@ -1,11 +1,11 @@
-FROM apache/airflow:2.7.1-python3.11
+FROM apache/airflow:2.10.3-python3.11
 
 USER root
 
 RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk procps wget
+    apt-get install -y openjdk-17-jdk procps wget
 
-ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-arm64"
+ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
 ENV SPARK_VERSION="3.5.3"
