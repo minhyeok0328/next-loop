@@ -1,0 +1,35 @@
+# Worker Node docker-compose3.yaml
+version: '3'
+services:
+  spark-worker:
+    image: bitnami/spark:3.4.2
+    networks:
+      - kafka_network 
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://34.47.114.102:7077  # Master 노드의 외부 IP
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=2
+      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_EXECUTOR_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes:
+      - ./data:/opt/spark/data
+
+
+  jmx-exporter:
+    image: bitnami/jmx-exporter:0.20.0
+    container_name: jmx-exporter-3
+    environment:
+      - JVM_OPTS=-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=5556:/opt/jmx-exporter/config.yaml
+    ports:
+      - "5556:5556"
+    networks:
+      - kafka_network
+  
+networks:
+  kafka_network:
+    driver: bridge
