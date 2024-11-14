@@ -18,6 +18,17 @@ RUN wget https://downloads.apache.org/spark/spark-$SPARK_VERSION/spark-$SPARK_VE
 ENV SPARK_HOME="/opt/spark"
 ENV PATH="$SPARK_HOME/bin:$PATH"
 
+ENV HADOOP_VERSION="3.3.6"
+RUN wget https://downloads.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+    && tar -xzf hadoop-$HADOOP_VERSION.tar.gz -C /opt \
+    && mv /opt/hadoop-$HADOOP_VERSION /opt/hadoop \
+    && rm hadoop-$HADOOP_VERSION.tar.gz
+
+ENV HADOOP_HOME="/opt/hadoop"
+ENV HADOOP_CONF_DIR="$HADOOP_HOME/etc/hadoop"
+ENV YARN_CONF_DIR="$HADOOP_HOME/etc/hadoop"
+ENV PATH="$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH"
+
 USER airflow
 
 WORKDIR /app
