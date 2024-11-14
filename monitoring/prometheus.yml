@@ -2,9 +2,42 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'kafka_exporter'
+  - job_name: 'kafka-cluster-1'
+    scrape_interval: 15s
     static_configs:
-      - targets: ['34.64.141.221:9308']
+      - targets: ['10.178.0.3:5556']
+
+  - job_name: 'kafka-cluster-2'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['10.178.0.7:5556']
+
+  - job_name: 'kafka-cluster-3'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['10.178.0.9:5556']
+
+  - job_name: 'spark-master'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['34.47.114.102:5556']
+
+  - job_name: 'spark-worker-1'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['34.47.121.138:5556']
+
+  - job_name: 'spark-worker-2'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['34.64.199.98:5556']
+
+
+  - job_name: 'fastapi'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['10.178.0.8:80'] # 왜 private ip로 하니까 뜨는 거지? 
+
 
   #- job_name: 'node-exporter'
   #  static_configs:
