@@ -1,8 +1,11 @@
 # Dockerfile for MLflow
-FROM python:3.8-slim
+FROM python:3.9-slim
 
-# Install MLflow and Google Cloud Storage library
-RUN pip install mlflow google-cloud-storage psycopg2-binary
+# Install MLflow, psycopg2-binary and Google Cloud Storage library
+RUN mkdir -p /app
+COPY ./requirements_dockerfile.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
 
 # Copy service account key to container
 COPY ./${GOOGLE_APPLICATION_CREDENTIALS} /root/.gcp/${GOOGLE_APPLICATION_CREDENTIALS}
