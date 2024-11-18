@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 GCS_BUCKET_NAME = 'dowhat-de1-datalake'
 PROCESSED_BUCKET_NAME = 'dowhat-de1-datawarehouse'
 CSV_PATH = 'v1/csv/'
-PARQUET_PATH = '/v1/hotel_order/'
-LOCAL_PATH = '/tmp/hotel_order.parquet'
 GCP_API_KEY = Variable.get('GCP_API_KEY')
 
 @dag(
@@ -69,19 +67,16 @@ def process_hotel_csv_data():
         task_id='process_csv_with_spark',
         bash_command="""
             spark-submit \
-            --master spark://34.22.67.129:7077 \
+            --master local[*] \
             --deploy-mode client \
+            --conf spark.executor.instances=2 \
             --conf spark.executor.memory=4g \
-            --conf spark.driver.memory=1g \
             --conf spark.executor.cores=2 \
             --conf spark.driver.cores=1 \
-            --conf spark.cores.max=3 \
             --conf spark.hadoop.fs.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem \
             --conf spark.hadoop.fs.gs.auth.service.account.enable=true \
             --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/tmp/airflow/key.json \
-            --conf spark.driver.host=$(hostname -I | awk '{print $1}') \
             --conf spark.driver.bindAddress=0.0.0.0 \
-            --conf spark.driver.extraJavaOptions="-Dlog4j.rootCategory=DEBUG,console" \
             --files {{ task_instance.xcom_pull(task_ids='prepare_gcs_key') }} \
             --jars https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar \
             /opt/airflow/scripts/process_hotel_csv_data.py \

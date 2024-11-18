@@ -1,12 +1,15 @@
 import logging
 import sys
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json, when
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
+today = datetime.now().strftime('%Y-%m-%d')
 
-output_path = "gs://dowhat-datawarehouse/data.parquet"
+output_path = f"gs://dowhat-de1-datawarehouse/v1/hotel_order/{today}"
 
 # Spark Session 생성
 spark = SparkSession.builder \
