@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  spark-master:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_MASTER_HOST=0.0.0.0
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - YARN_CONF_DIR=/opt/hadoop/etc/hadoop
+      - SPARK_MASTER_URL=spark://34.22.67.129:7077
+      - YARN_RESOURCEMANAGER_HOST=10.178.0.35
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro
+    network_mode: "host"

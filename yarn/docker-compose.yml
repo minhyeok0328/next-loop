@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  resourcemanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resourcemanager
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - YARN_CONF_DIR=/opt/hadoop/etc/hadoop
+      - YARN_RESOURCEMANAGER_HOSTNAME=0.0.0.0
+    ports:
+      - "8088:8088"  # YARN UI
+      - "8032:8032"  # Resource Manager
+      - "8030:8030"  # Scheduler
+      - "8031:8031"  # Resource Tracker
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro
+    network_mode: "host"
+
+  nodemanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nodemanager
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - YARN_CONF_DIR=/opt/hadoop/etc/hadoop
+      - YARN_NODEMANAGER_HOSTNAME=0.0.0.0
+      - YARN_RESOURCEMANAGER_HOSTNAME=0.0.0.0
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro
+    depends_on:
+      - resourcemanager
+    network_mode: "host"

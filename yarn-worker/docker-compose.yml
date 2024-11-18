@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  nodemanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nodemanager
+    environment:
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - YARN_CONF_DIR=/opt/hadoop/etc/hadoop
+      - YARN_NODEMANAGER_HOSTNAME=0.0.0.0
+      - YARN_RESOURCEMANAGER_HOSTNAME=10.178.0.35
+    ports:
+      - "8042:8042"
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro
+    network_mode: "host"
