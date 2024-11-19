@@ -3,7 +3,7 @@ import logging
 from airflow.decorators import task, dag
 from airflow.utils.dates import days_ago
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.operators.bash import BashOperator
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from airflow.models import Variable
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ def process_hotel_csv_data():
 
         logger.info(f'GCS file paths: {gcs_file_paths}')
         return gcs_file_paths
+        # return ['gs://dowhat-de1-datalake/test/csv.csv']
 
     @task
     def prepare_gcs_key():
@@ -62,27 +63,27 @@ def process_hotel_csv_data():
     csv_files = list_csv_files()
     csv_files_str = prepare_csv_files_string(csv_files)
 
-    # BashOperator를 사용한 spark-submit 명령어 구성
-    spark_job = BashOperator(
+    # SparkSubmitOperator로 변경
+    spark_job = SparkSubmitOperator(
         task_id='process_csv_with_spark',
-        bash_command="""
-            spark-submit \
-            --master local[*] \
-            --deploy-mode client \
-            --conf spark.executor.instances=2 \
-            --conf spark.executor.memory=4g \
-            --conf spark.executor.cores=2 \
-            --conf spark.driver.cores=1 \
-            --conf spark.hadoop.fs.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem \
-            --conf spark.hadoop.fs.gs.auth.service.account.enable=true \
-            --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/tmp/airflow/key.json \
-            --conf spark.driver.bindAddress=0.0.0.0 \
-            --files {{ task_instance.xcom_pull(task_ids='prepare_gcs_key') }} \
-            --jars https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar \
-            /opt/airflow/scripts/process_hotel_csv_data.py \
-            {{ task_instance.xcom_pull(task_ids='prepare_csv_files_string') }}
-        """
+        application='/opt/airflow/scripts/process_hotel_csv_data.py',
+        conn_id='spark_local',  # Airflow에서 설정한 Spark connection ID
+        application_args=["{{ task_instance.xcom_pull(task_ids='prepare_csv_files_string') }}"],
+        files="{{ task_instance.xcom_pull(task_ids='prepare_gcs_key') }}",
+        jars='https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar',
+        conf={
+            'spark.executor.memory': '4g',
+            'spark.executor.cores': '2',
+            'spark.driver.cores': '1',
+            'spark.dynamicAllocation.enabled': 'false',
+            'spark.hadoop.fs.gs.impl': 'com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem',
+            'spark.hadoop.fs.gs.auth.service.account.enable': 'true',
+            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': '/tmp/airflow/key.json',
+            'spark.driver.bindAddress': '0.0.0.0'
+        },
+        verbose=True
     )
+    
     gcs_key_path >> csv_files_str >> spark_job
 
 process_hotel_csv_data()
