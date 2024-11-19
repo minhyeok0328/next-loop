@@ -1,0 +1,35 @@
+mappings:
+  - match: "airflow.*.*.*.duration"
+    name: "airflow_task_duration_seconds"
+    labels:
+      dag_id: "$1"
+      task_id: "$2"
+      type: "$3"
+  
+  - match: "airflow.dag.*.*.duration"
+    name: "airflow_dag_duration_seconds"
+    labels:
+      dag_id: "$1"
+      type: "$2"
+  
+  - match: "airflow.pool.*.open_slots"
+    name: "airflow_pool_open_slots"
+    labels:
+      pool_name: "$1"
+  
+  - match: "airflow.pool.*.used_slots"
+    name: "airflow_pool_used_slots"
+    labels:
+      pool_name: "$1"
+  
+  - match: "airflow.pool.*.queued_slots"
+    name: "airflow_pool_queued_slots"
+    labels:
+      pool_name: "$1"
+
+  - match: "airflow.*.*.*.success"
+    name: "airflow_task_success"
+    labels:
+      dag_id: "$1"
+      task_id: "$2"
+      type: "$3"

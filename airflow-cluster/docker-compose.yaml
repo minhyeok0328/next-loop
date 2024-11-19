@@ -1,35 +1,178 @@
-### GCS - Spark - Feast Cluster pipeline with Airflow ###
-version: '3'
 services:
-  airflow-webserver:
+  cadvisor:
+    image: google/cadvisor:canary
+    container_name: cadvisor-airflow
+    ports:
+      - "5503:8080"
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:ro"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro"
+    networks:
+      - airflow_cluster
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    restart: always
+  
+  airflow-triggerer:
     build: .
     user: "${AIRFLOW_UID:-50000}:0"
-    network_mode: "host"
+    networks:
+      - airflow_cluster
     environment:
-      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow/airflow.db
+      # Monitoring 설정
+      - AIRFLOW__METRICS__STATSD_ON=True
+      - AIRFLOW__METRICS__STATSD_HOST=statsd-exporter
+      - AIRFLOW__METRICS__STATSD_PORT=9125
+      - AIRFLOW__METRICS__STATSD_PREFIX=airflow
+      # 기존 설정들
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CLOUD_SQL_PRIVATE_IP}/airflow
       - AIRFLOW__CORE__LOAD_EXAMPLES=false
       - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}
-      - AIRFLOW__WEBSERVER__SECRET_KEY=${WEBSERVER_SECRET_KEY}
-      # Spark & GCS 설정
-      - AIRFLOW__CORE__ENABLE_XCOM_PICKLING=true
-      - SPARK_MASTER_URL=spark://${SPARK_MASTER_IP}:7077
+      - SPARK_HOME=/opt/spark
+      - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip
+      - SPARK_MASTER_URL=spark://spark-master:7077
       - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
       - GCP_PROJECT_ID=${GCP_PROJECT_ID}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/config/gcp-credentials.json
+      # Cloud SQL 설정
+      - POSTGRES_HOST=${CLOUD_SQL_PRIVATE_IP}
+      - POSTGRES_DB=airflow
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CLOUD_SQL_CONNECTION_NAME=${GCP_PROJECT_ID}:${CLOUD_SQL_REGION}:mlflow-backend-store-uri-postgresql
       # Feast 설정
       - FEAST_REGISTRY_PATH=/opt/airflow/data/registry.db
     volumes:
-      - ./dags:/opt/airflow/dags
+      - ./dags:/opt/airflow/dags:ro
       - ./logs:/opt/airflow/logs
-      - ./plugins:/opt/airflow/plugins
-      - ./config:/opt/airflow/config
+      - ./plugins:/opt/airflow/plugins:ro
+      - ./config:/opt/airflow/config:ro
       - ./data:/opt/airflow/data
       - ./airflow:/opt/airflow/airflow
       - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
-      - ./jars:/opt/airflow/jars
+      - ./jars:/opt/airflow/jars:ro
       - ./feast_data:/opt/airflow/feast_data
-    command: bash -c "airflow db init && airflow db migrate && airflow users create --username admin --firstname admin --lastname admin --role Admin --email admin@example.com --password admin && airflow webserver"
+      - /opt/spark:/opt/spark
+    command: airflow triggerer
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  airflow-init:
+    build: .
+    container_name: airflow-init
+    user: "${AIRFLOW_UID:-50000}:0"
+    networks:
+      - airflow_cluster
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CLOUD_SQL_PRIVATE_IP}/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${WEBSERVER_SECRET_KEY}
+      # Monitoring 설정
+      - AIRFLOW__METRICS__STATSD_ON=True
+      - AIRFLOW__METRICS__STATSD_HOST=statsd-exporter
+      - AIRFLOW__METRICS__STATSD_PORT=9125
+      - AIRFLOW__METRICS__STATSD_PREFIX=airflow
+      # 기존 설정들
+      - AIRFLOW__CORE__ENABLE_XCOM_PICKLING=true
+      - SPARK_HOME=/opt/spark
+      - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/config/gcp-credentials.json
+      # Cloud SQL 설정
+      - POSTGRES_HOST=${CLOUD_SQL_PRIVATE_IP}
+      - POSTGRES_DB=airflow
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CLOUD_SQL_CONNECTION_NAME=${GCP_PROJECT_ID}:${CLOUD_SQL_REGION}:mlflow-backend-store-uri-postgresql
+      # Feast 설정
+      - FEAST_REGISTRY_PATH=/opt/airflow/data/registry.db
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins:ro
+      - ./config:/opt/airflow/config:ro
+      - ./data:/opt/airflow/data
+      - ./airflow:/opt/airflow/airflow
+      - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
+      - ./jars:/opt/airflow/jars:ro
+      - ./feast_data:/opt/airflow/feast_data
+      - /opt/spark:/opt/spark
+    entrypoint: /bin/bash
+    command: >
+      -c "
+      airflow db init &&
+      airflow users create
+      --username admin
+      --password admin
+      --firstname Anonymous
+      --lastname Admin
+      --role Admin
+      --email admin@example.com
+      "
+
+  airflow-webserver:
+    build: .
+    user: "${AIRFLOW_UID:-50000}:0"
+    networks:
+      - airflow_cluster
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CLOUD_SQL_PRIVATE_IP}/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${WEBSERVER_SECRET_KEY}
+      # Monitoring 설정
+      - AIRFLOW__METRICS__STATSD_ON=True
+      - AIRFLOW__METRICS__STATSD_HOST=statsd-exporter
+      - AIRFLOW__METRICS__STATSD_PORT=9125
+      - AIRFLOW__METRICS__STATSD_PREFIX=airflow
+      # 기존 설정들
+      - AIRFLOW__CORE__ENABLE_XCOM_PICKLING=true
+      - SPARK_HOME=/opt/spark
+      - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_DRIVER_HOST=airflow-webserver
+      - SPARK_DRIVER_BINDADDRESS=0.0.0.0
+      - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/config/gcp-credentials.json
+      # Cloud SQL 설정
+      - POSTGRES_HOST=${CLOUD_SQL_PRIVATE_IP}
+      - POSTGRES_DB=airflow
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CLOUD_SQL_CONNECTION_NAME=${GCP_PROJECT_ID}:${CLOUD_SQL_REGION}:mlflow-backend-store-uri-postgresql
+      # Feast 설정
+      - FEAST_REGISTRY_PATH=/opt/airflow/data/registry.db
+    ports:
+      - "8080:8080"
+      - "4040-4050:4040-4050"
+        # - "9102:9102"  statsd-exporter가 이미 9102 포트 사용중이므로, webserver에서는 포트 매핑 불필요함
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins:ro
+      - ./config:/opt/airflow/config:ro
+      - ./data:/opt/airflow/data
+      - ./airflow:/opt/airflow/airflow
+      - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
+      - ./jars:/opt/airflow/jars:ro
+      - ./feast_data:/opt/airflow/feast_data
+      - /opt/spark:/opt/spark
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
@@ -37,31 +180,71 @@ services:
       retries: 5
     restart: always
     extra_hosts:
-      - "airflow-scheduler:10.178.0.20"
+      - "airflow-scheduler:10.178.0.30"
+    command: webserver
 
   airflow-scheduler:
     build: .
     user: "${AIRFLOW_UID:-50000}:0"
-    network_mode: "host"
+    networks:
+      - airflow_cluster
     environment:
-      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow/airflow.db
+      # Monitoring 설정
+      - AIRFLOW__METRICS__STATSD_ON=True
+      - AIRFLOW__METRICS__STATSD_HOST=statsd-exporter
+      - AIRFLOW__METRICS__STATSD_PORT=9125
+      - AIRFLOW__METRICS__STATSD_PREFIX=airflow
+      # 기존 설정들
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${CLOUD_SQL_PRIVATE_IP}/airflow
       - AIRFLOW__CORE__LOAD_EXAMPLES=false
       - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}
-      - SPARK_MASTER_URL=spark://${SPARK_MASTER_IP}:7077
+      - SPARK_HOME=/opt/spark
+      - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip
+      - SPARK_MASTER_URL=spark://spark-master:7077
       - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
       - GCP_PROJECT_ID=${GCP_PROJECT_ID}
       - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/config/gcp-credentials.json
+      # Cloud SQL 설정
+      - POSTGRES_HOST=${CLOUD_SQL_PRIVATE_IP}
+      - POSTGRES_DB=airflow
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CLOUD_SQL_CONNECTION_NAME=${GCP_PROJECT_ID}:${CLOUD_SQL_REGION}:mlflow-backend-store-uri-postgresql
+      # Feast 설정
       - FEAST_REGISTRY_PATH=/opt/airflow/data/registry.db
     volumes:
-      - ./dags:/opt/airflow/dags
+      - ./dags:/opt/airflow/dags:ro
       - ./logs:/opt/airflow/logs
-      - ./plugins:/opt/airflow/plugins
-      - ./config:/opt/airflow/config
+      - ./plugins:/opt/airflow/plugins:ro
+      - ./config:/opt/airflow/config:ro
       - ./data:/opt/airflow/data
       - ./airflow:/opt/airflow/airflow
       - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
-      - ./jars:/opt/airflow/jars
+      - ./jars:/opt/airflow/jars:ro
       - ./feast_data:/opt/airflow/feast_data
+      - /opt/spark:/opt/spark
     command: bash -c "airflow db upgrade && airflow scheduler"
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname $(hostname)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     restart: always
+
+  statsd-exporter:
+    image: prom/statsd-exporter:latest
+    container_name: airflow-statsd-exporter
+    command: --statsd.mapping-config=/etc/statsd-exporter/mappings.yml
+    volumes:
+      - ./monitoring/statsd-mappings.yml:/etc/statsd-exporter/mappings.yml:ro
+    ports:
+      - "9125:9125/udp"
+      - "9102:9102"
+    networks:
+      - airflow_cluster
+    restart: always
+
+networks:
+  airflow_cluster:
+    external: true

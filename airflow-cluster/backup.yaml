@@ -1,0 +1,75 @@
+### GCS - Spark - Feast Cluster pipeline with Airflow ###
+services:
+  airflow-webserver:
+    build: .
+    user: "${AIRFLOW_UID:-50000}:0"
+    networks:
+      - kafka_network
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${WEBSERVER_SECRET_KEY}
+      # Spark & GCS 설정
+      - AIRFLOW__CORE__ENABLE_XCOM_PICKLING=true
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/config/gcp-credentials.json
+      # Feast 설정
+      - FEAST_REGISTRY_PATH=/opt/airflow/data/registry.db
+    ports:
+      - "8080:8080"
+      - "4040-4050:4040-4050"
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins:ro
+      - ./config:/opt/airflow/config:ro
+      - ./data:/opt/airflow/data
+      - ./airflow:/opt/airflow/airflow
+      - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
+      - ./jars:/opt/airflow/jars:ro
+      - ./feast_data:/opt/airflow/feast_data
+    command: bash -c "airflow db init && airflow db migrate && airflow users create --username admin --firstname admin --lastname admin --role Admin --email admin@example.com --password admin && airflow webserver"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    extra_hosts:
+      - "airflow-scheduler:10.178.0.30"
+
+  airflow-scheduler:
+    build: .
+    user: "${AIRFLOW_UID:-50000}:0"
+    networks:
+      - kafka_network
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/config/gcp-credentials.json
+      - FEAST_REGISTRY_PATH=/opt/airflow/data/registry.db
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins:ro
+      - ./config:/opt/airflow/config:ro
+      - ./data:/opt/airflow/data
+      - ./airflow:/opt/airflow/airflow
+      - ./config/gcp-credentials.json:/opt/airflow/config/gcp-credentials.json:ro
+      - ./jars:/opt/airflow/jars:ro
+      - ./feast_data:/opt/airflow/feast_data
+    command: bash -c "airflow db upgrade && airflow scheduler"
+    restart: always
+
+networks:
+  kafka_network:
+    external: true
