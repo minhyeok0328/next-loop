@@ -1,0 +1,60 @@
+services:
+  cadvisor:
+    image: google/cadvisor:canary
+    container_name: cadvisor-spark-worker-1
+    ports:
+      - "${INTERNAL_IP}:5501:8080"
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:ro"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro"
+    networks:
+      - local_cluster_net
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    restart: always
+
+  spark-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spark-worker-1
+    hostname: spark-worker-1
+    networks:
+      - local_cluster_net
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://${SPARK_MASTER_HOST}:7077
+      - SPARK_WORKER_HOST=0.0.0.0
+      - SPARK_WORKER_PORT=8881
+      - SPARK_WORKER_WEBUI_PORT=8081
+      - SPARK_LOCAL_IP=0.0.0.0
+      - SPARK_PUBLIC_DNS=${INTERNAL_IP}
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_TIMEOUT=120
+      # Prometheus 메트릭 설정
+      - SPARK_METRICS_ON=true
+      - SPARK_METRICS_CONF=/opt/spark/conf/metrics.properties
+    ports:
+      - "${INTERNAL_IP}:8081:8081"  # Worker Web UI
+      - "${INTERNAL_IP}:8881:8881"  # Worker Port
+      - "${INTERNAL_IP}:7072:7072"  # Metrics
+    volumes:
+      - ./data:/opt/spark/data
+      - /opt/spark:/opt/spark
+      - ./metrics/metrics.properties:/opt/spark/conf/metrics.properties
+      - ./config/gcp-credentials.json:/opt/spark/config/gcp-credentials.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  local_cluster_net:
+    driver: bridge
