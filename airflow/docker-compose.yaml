@@ -88,6 +88,8 @@ x-airflow-common:
       condition: service_healthy
     postgres:
       condition: service_healthy
+  networks:
+    - kafka_network
 
 services:
   postgres:
@@ -104,6 +106,8 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+    networks:
+    - kafka_network
 
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
@@ -118,6 +122,8 @@ services:
       retries: 50
       start_period: 30s
     restart: always
+    networks:
+    - kafka_network
 
   airflow-webserver:
     <<: *airflow-common
@@ -135,6 +141,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - kafka_network
 
   airflow-scheduler:
     <<: *airflow-common
@@ -150,6 +158,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - kafka_network
 
   airflow-worker:
     <<: *airflow-common
@@ -173,6 +183,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - kafka_network
 
   airflow-triggerer:
     <<: *airflow-common
@@ -188,6 +200,8 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - kafka_network
 
   airflow-init:
     <<: *airflow-common
@@ -252,6 +266,8 @@ services:
     user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
+    networks:
+      - kafka_network
 
   airflow-cli:
     <<: *airflow-common
@@ -287,6 +303,29 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      - kafka_network
+
+  # StatsD Exporter 추가
+  statsd-exporter:
+    image: prom/statsd-exporter:v0.27.1
+    ports:
+      - "9125:9125/udp"   # StatsD는 UDP 9125 포트를 기본으로 사용
+      - "9102:9102"       # Prometheus에서 수집할 수 있도록 HTTP 포트 열기
+    networks:
+      - kafka_network
+    environment:
+      STATSD_EXPORTER_MAPPING_CONFIG: |
+        mappings:
+          - match: "airflow.*"
+            name: "airflow_statsd"
+            labels:
+              service: "airflow"
+    restart: always
 
 volumes:
   postgres-db-volume:
+
+networks:
+  kafka_network:
+    external: true

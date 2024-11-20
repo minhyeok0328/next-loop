@@ -1,13 +1,10 @@
 # main.py
-from dotenv import load_dotenv
-import os
 import argparse
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
 from utils.data import load_and_preprocess_data
 from utils.model_eval import train_and_evaluate_models
 from utils.mlflow import setup_mlflow, load_production_model
-load_dotenv()
 
 def get_models():
     return {
@@ -42,7 +39,7 @@ def main():
                       choices=['f1', 'accuracy', 'precision', 'recall'],
                       help='Evaluation metric for model selection')
     parser.add_argument('--data_url', type=str, 
-                      default="os.environ['data_url']",
+                      default="gs://dowhat-de1-mlfllowtest/titanic/titanic.csv",
                       help='URL of the dataset')
     args = parser.parse_args()
 

@@ -1,0 +1,52 @@
+version: '3.8'
+services: 
+  cadvisor:
+    image: google/cadvisor:canary
+    container_name: cadvisor-spark-master
+    ports:
+      - "5500:8080"  # 호스트 포트를 5500으로 매핑
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:ro"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro" #디스크 I/O 관련 메트릭
+    networks:
+      - kafka_network
+    restart: always
+
+  spark-master:
+    build: 
+      context: .  # 현재 디렉터리에서 빌드
+      dockerfile: Dockerfile  # 'Dockerfile' 파일을 사용하여 빌드
+    container_name: spark-master
+    hostname: spark-master
+    networks:
+      - kafka_network
+        
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master #10.178.0.26 이거 쓰면 왜 안될까?
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8080
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+     
+    ports:
+      - '8080:8080' # Spark Web UI 포트
+      - '7077:7077' # Spark Master 포트
+      - '4040:4040' # Spark Application UI 포트
+    
+    volumes:
+      - ./data:/opt/spark/data # 로컬 data 디렉토리를 Spark 컨테이너의 data 디렉토리로 마운트
+
+networks:
+  kafka_network:
+    external: true
+    
+
+
+
+

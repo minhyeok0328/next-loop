@@ -1,3 +1,4 @@
+#mlflow container monitoring
 version: '3.8'
 services:
   cadvisor:
@@ -14,19 +15,6 @@ services:
     networks:
       - kafka_network
     restart: always
-
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: backend
-    ports:
-      - "80:80"
-    environment:
-      - APP_ENV=production
-    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 80"
-    networks:
-      - kafka_network
 
 networks:
   kafka_network:

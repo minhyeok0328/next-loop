@@ -1,7 +1,74 @@
+# job_name 변경 절대 금지 !!!!메트릭 중복수집 오류 생김. 
 global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'kafka_exporter'
+  - job_name: 'kafka-cluster-1'
     static_configs:
-      - targets: ['34.64.141.221:9308']
+      - targets: ['10.178.0.3:5556']
+
+  - job_name: 'kafka-cluster-2'
+    static_configs:
+      - targets: ['10.178.0.7:5556']
+
+  - job_name: 'kafka-cluster-3'
+    static_configs:
+      - targets: ['10.178.0.9:5556']
+
+  - job_name: 'spark_master_native'
+    metrics_path: '/metrics/master/prometheus'
+    static_configs:
+      - targets: ['10.178.0.26:8080']
+
+  - job_name: 'spark_applications_native'
+    metrics_path: '/metrics/applications/prometheus'
+    static_configs:
+      - targets: ['10.178.0.26:8080']  # Spark Master의 IP와 포트 설정
+
+  - job_name: 'spark_worker-1_native'
+    metrics_path: '/metrics/worker/prometheus'  # Spark Worker의 메트릭 경로
+    static_configs:
+      - targets: ['10.178.0.27:8081']  # Spark Worker 1의 IP와 포트 설정
+  
+  - job_name: 'spark_worker-2_native'
+    metrics_path: '/metrics/worker/prometheus'  # Spark Worker 2의 메트릭 경로
+    static_configs:
+      - targets: ['10.178.0.28:8082']  # Spark Worker 2의 IP와 포트 설정
+  
+  - job_name: 'spark-master_cAdvisor' 
+    static_configs:
+      - targets: ['10.178.0.26:5500']
+
+  - job_name: 'spark-worker-1_native_cAdvisor' 
+    static_configs:
+      - targets: ['10.178.0.27:5500']
+
+  - job_name: 'spark-worker-2_native_cAdvisor' 
+    static_configs:
+      - targets: ['10.178.0.28:5500']
+
+  - job_name: 'backend(fastapi)'
+    static_configs:
+      - targets: ['10.178.0.8:80']
+  
+  - job_name: 'backend(fastapi)_cadvisor' 
+    static_configs:
+      - targets: ['10.178.0.8:5500']
+
+  - job_name: 'mlflow_cadvisor' 
+    static_configs:
+      - targets: ['10.178.0.10:5500'] 
+
+  - job_name: 'airflow_cadvisor' 
+    static_configs:
+      - targets: ['10.178.0.29:5500'] 
+
+  - job_name: 'airflow_statsd_exporter' 
+    static_configs:
+      - targets: ['10.178.0.29:9102']  # StatsD Exporter의 HTTP 포트
+
+
+  # - job_name: 'node-exporter(mlflow)'
+  #   static_configs:
+  #    - targets:
+  #        - '10.178.0.10:9100'   # mlflow

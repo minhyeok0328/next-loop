@@ -34,5 +34,6 @@ USER airflow
 WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
+COPY ./airflow.cfg /opt/airflow/airflow.cfg
 
 RUN pip install --no-cache-dir -r /app/requirements.txt
