@@ -1,13 +1,20 @@
+import os
 import mlflow
 import traceback
 import pandas as pd
 
+from dotenv import load_dotenv
 from mlflow.tracking import MlflowClient
 from fastapi import FastAPI, HTTPException
-from .models import PredictionInput, PredictionOutput
+from models import PredictionInput, PredictionOutput
 from prometheus_fastapi_instrumentator import Instrumentator
-from utils.mlflow import load_production_model, setup_mlflow
 
+
+load_dotenv()
+
+def setup_mlflow(experiment_name):
+    mlflow.set_tracking_uri("http://10.178.0.10:5000")
+    mlflow.set_experiment(experiment_name)
 
 app = FastAPI(
     title="Titanic Survival Prediction API",
