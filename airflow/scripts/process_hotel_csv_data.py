@@ -76,17 +76,18 @@ def main(input_files_str):
             file,
             header=True,
             inferSchema=True,
-            multiLine=True, quote='"',escape='"'
+            multiLine=True,
+            quote='"',
+            escape='"'
         )
         df = temp_df if df is None else df.union(temp_df)
 
     logger.info("CSV files loaded successfully")
     logger.info(f"Initial Data Count: {df.count()}")
 
-    df = df.filter(col("status") == "COMPLETE") \
+    df = df.filter(col("status") == "COMPLETE" ) \
            .drop("room_name", "customer_name", "refuse_date")
 
-    # 데이터 전처리
     df = df.withColumn("order_seq", col("order_seq").cast("int")) \
            .withColumn("order_price", col("order_price").cast("int")) \
            .withColumn("check_in", col("check_in").cast("timestamp")) \
@@ -98,17 +99,12 @@ def main(input_files_str):
            .withColumn("contents", parse_contents_udf(col("contents")))
 
     logger.info(f"Data Count after contents parsing: {df.count()}")
-    df.show(truncate=False)  # Show data after parsing for debugging
 
-    # 파싱확인
     df.select("contents").show(truncate=False)
-
-    # contents 컬럼의 explode 적용
     df = df.withColumn("contents", explode(col("contents")))
-    logger.info(f"Data Count after explode: {df.count()}")
-    df.show(truncate=False)  # 확인
 
-    # contents 컬럼 안에 있는거 밖으로 빼오기
+    logger.info(f"Data Count after explode: {df.count()}")
+
     df = df.withColumn("item_seq", col("contents.itemSeq")) \
            .withColumn("item_name", col("contents.itemName")) \
            .withColumn("item_count", col("contents.count")) \
@@ -123,10 +119,8 @@ def main(input_files_str):
            .drop("contents")
 
     logger.info(f"Data Count after feature extraction: {df.count()}")
-    df.show(truncate=False)
 
-    df = df.filter(~isnull(col("item_count")))
-    df.show(truncate=False)
+    df = df.filter(~isnull(col("item_count")) & (col("order_price") > 0))
 
     logger.info("Data processing completed")
     df.write.parquet(output_path)
