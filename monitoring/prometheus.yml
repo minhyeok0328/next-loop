@@ -1,7 +1,24 @@
+# job_name 변경 절대 금지 !!!!메트릭 중복수집 오류 생김. 
 global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'kafka_exporter'
+  - job_name: 'backend(fastapi)'
     static_configs:
-      - targets: ['34.64.141.221:9308']
+      - targets: ['10.178.0.8:80']
+  
+  - job_name: 'backend(fastapi)_cadvisor' 
+    static_configs:
+      - targets: ['10.178.0.8:5500']
+
+  - job_name: 'mlflow_cadvisor' 
+    static_configs:
+      - targets: ['10.178.0.10:5500'] 
+
+  - job_name: 'airflow_cadvisor' 
+    static_configs:
+      - targets: ['10.178.0.29:5500'] 
+
+  - job_name: 'airflow_statsd_exporter' 
+    static_configs:
+      - targets: ['10.178.0.29:9102']  # StatsD Exporter의 HTTP 포트
