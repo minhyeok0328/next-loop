@@ -12,7 +12,7 @@ services:
       - prometheus-storage:/prometheus  # Prometheus 데이터를 저장할 볼륨
     
     networks:
-      - kafka_network
+      - nextloop_network
       
   grafana:
     image: grafana/grafana:11.0.6
@@ -29,12 +29,12 @@ services:
       - prometheus
     restart: always
     networks:
-      - kafka_network
+      - nextloop_network
     
 volumes:
   prometheus-storage:
   grafana-storage:
 
 networks:
-  kafka_network:
+  nextloop_network:
     external: true
