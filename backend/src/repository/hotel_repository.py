@@ -1,6 +1,7 @@
 from sqlalchemy import insert, select
 from src.utils import DBConnector
 
+
 class HotelRepository:
     def __init__(self, db_connector: DBConnector):
         self.db_connector = db_connector
