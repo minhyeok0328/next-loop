@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  cadvisor:
+    image: google/cadvisor:canary
+    container_name: cadvisor-mlflow  
+    ports:
+      - "5500:8080"  # 호스트 포트를 5500으로 매핑
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:ro"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro" #디스크 I/O 관련 메트릭
+    networks:
+      - kafka_network
+    restart: always
+
+networks:
+  kafka_network:
+    external: true
