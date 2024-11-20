@@ -1,16 +1,29 @@
-version: '3.8'
-
 services:
-  backend:
+  blue_app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: backend
+    container_name: blue_app
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./:/app
     ports:
-      - "80:80"
-    environment:
-      - APP_ENV=production
-    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 80"
+      - "8000:8000"
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000"
+
+  green_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: green_app
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./:/app
+    ports:
+      - "8001:8001"
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8001"
 
   cadvisor:
     image: google/cadvisor:canary
@@ -29,4 +42,4 @@ services:
 
 networks:
   nextloop_network:
-    external: true
+    driver: bridge
