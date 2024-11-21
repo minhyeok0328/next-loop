@@ -53,6 +53,8 @@ jobs:
           git fetch origin && \
           git pull origin main && \
           git checkout main && \
+          cd ~/production/backend && \
+          sh switch-blue-green.sh && \
           echo "airflow changes deployed successfully."
 
   deploy-backend:
