@@ -15,7 +15,7 @@ GCP_API_KEY = Variable.get('GCP_API_KEY')
 
 @dag(
     start_date=days_ago(1),
-    schedule="@daily",
+    schedule="0 4 * * 2",
     catchup=False
 )
 def process_hotel_csv_data():
@@ -33,7 +33,6 @@ def process_hotel_csv_data():
 
         logger.info(f'GCS file paths: {gcs_file_paths}')
         return gcs_file_paths
-        # return ['gs://dowhat-de1-datalake/test/csv.csv']
 
     @task
     def prepare_gcs_key():

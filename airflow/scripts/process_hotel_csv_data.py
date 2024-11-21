@@ -4,7 +4,7 @@ import json
 import re
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, from_json, when, explode, lit, udf, isnull
+from pyspark.sql.functions import col, from_json, when, explode, lit, udf, isnull, avg, datediff
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType, ArrayType
 from datetime import datetime
 
@@ -85,8 +85,9 @@ def main(input_files_str):
     logger.info("CSV files loaded successfully")
     logger.info(f"Initial Data Count: {df.count()}")
 
+    # 주문 상태가 COMPLETE 인 것으로만 필터링
     df = df.filter(col("status") == "COMPLETE" ) \
-           .drop("room_name", "customer_name", "refuse_date")
+           .drop("room_name", "customer_name", "refuse_date") # 필요없는 컬럼 제거
 
     df = df.withColumn("order_seq", col("order_seq").cast("int")) \
            .withColumn("order_price", col("order_price").cast("int")) \
@@ -120,6 +121,19 @@ def main(input_files_str):
 
     logger.info(f"Data Count after feature extraction: {df.count()}")
 
+    # 결측값 처리
+    df = df.fillna({"free_count": 0})  # free_count의 결측값을 0으로 대체
+
+    # complete_period의 결측값 처리 및 중앙값 계산 후 대체
+    complete_period_median = df.approxQuantile("complete_period", [0.5], 0.01)[0]
+    logger.info(f"Median of complete_period: {complete_period_median}")
+    df = df.withColumn("complete_period", when(isnull(col("complete_period")), lit(complete_period_median)).otherwise(col("complete_period")))
+
+    # 추가 파생 변수 생성
+    df = df.withColumn("stay_period", datediff(col("check_out"), col("check_in")))  # 체류 기간
+    df = df.withColumn("avg_spending_per_visitor", (col("order_price") / col("visitor_cnt")).cast("float"))  # 방문자당 평균 지출 금액
+
+    # 유료 상품만 추천
     df = df.filter(~isnull(col("item_count")) & (col("order_price") > 0))
 
     logger.info("Data processing completed")
