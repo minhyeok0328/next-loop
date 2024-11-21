@@ -17,9 +17,9 @@ def setup_mlflow(experiment_name):
     mlflow.set_experiment(experiment_name)
 
 app = FastAPI(
-    title="Titanic Survival Prediction API",
-    description="Predict survival probability for Titanic passengers",
-    version="1.0.0"
+    title="DOWHAT Hotel Room Service Recommended API",
+    description="DOWHAT 호텔 룸서비스 추천 서비스",
+    version="0.8.2"
 )
 
 Instrumentator().instrument(app).expose(app)
