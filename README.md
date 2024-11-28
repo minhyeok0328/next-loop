@@ -23,7 +23,7 @@
 
 ---
 
-## 🔔 NextLoop Repository 방문 횟수 
+## ✅ NextLoop Repository 방문 횟수 
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fminhyeok0328%2Fnext-loop&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
@@ -64,7 +64,7 @@
 ## 🖥️ 개발 환경 설정
 
 - **GCP 인스턴스 사용**
-  - 리전: 서울 (asia-northeast3-a) 
+  - 리전: 서울 (asia-northeast3) 
   - Image : Ubuntu 24.04.1 LTS(x86/64) 단, MLFlow 등 모델 학습 인스턴스는 Deep Learning VM with CUDA 12.3 M125
   - Instance Type :  E2.standard-4 (vcpu 4, ram 16gb)
   - Storage : 최소 100GB (균형 있는 영구 디스크)
@@ -100,28 +100,28 @@
 ![image](https://github.com/user-attachments/assets/8da81757-4720-4548-bd5f-f1b66901de49)
 
 
-- 데이터 파이프라인은 4개의 주요 계층으로 구성되어 있음.<br>
+- 데이터 파이프라인은 4개의 주요 단계로 구성되어 있음.<br>
 
-#### 1) Storage Layer (입력 저장소 계층)
+#### 1) Storage Layer (입력 저장 단계)
 - 데이터 소스:
   - CSV 파일 업로드를 통해 데이터를 입력받음.
-  - GCS(Google Cloud Storage)에 직접 데이터를 저장하거나, GCS에서 데이터 가져오는 것도 가능.
+  - GCS(Google Cloud Storage)에 데이터를 저장.
 
 
 
-#### 2) Processing Layer (데이터 처리 계층)
+#### 2) Processing Layer (데이터 처리 단계)
 - Apache Spark를 사용하여 3단계 데이터 처리 수행.
   - 데이터 검증 (Data Validation): 데이터를 검증하고 품질을 확인.
   - 변환 (Transformation): 호텔 도메인에 기반한 feature 생성 및 데이터 전처리.
   - 포맷 변환 (Format Convert): 데이터를 효율적으로 저장 및 활용할 수 있도록 'Parquet' 포맷으로 변환.
 
 
-#### 3) Storage Layer (출력 저장소 계층)
+#### 3) Storage Layer (출력 저장 단계)
   - 최종 처리된 데이터를 feature store인 Cloud Storage Bucket에 저장.
   - feast를 사용하지 않은 이유는 인프라 구축 초기 단계이기 때문에 최대한 간소화하기로 결정했기 때문임. 
 
 
-#### 4) Consumption Layer (소비 계층)
+#### 4) Consumption Layer (소비 단계)
   - 최종 데이터는 데이터 사이언티스트들이 Feature Store에서 데이터를 가져와 분석 및 모델 학습 등에 활용.
 
 
