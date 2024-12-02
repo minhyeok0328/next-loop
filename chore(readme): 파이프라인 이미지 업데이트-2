@@ -1,6 +1,6 @@
 # Dowhat 기업 연계 프로젝트 
 
---- 
+---
 ## 🏨 프로젝트 정보 
 
 - **프로젝트 명**: 호텔 운영 효율화 및 AI CRM 파이프라인 구축
@@ -23,7 +23,7 @@
 
 ---
 
-## ✅ NextLoop Repository 방문 횟수 
+## 🔔 NextLoop Repository 방문 횟수 
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fminhyeok0328%2Fnext-loop&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
@@ -64,7 +64,7 @@
 ## 🖥️ 개발 환경 설정
 
 - **GCP 인스턴스 사용**
-  - 리전: 서울 (asia-northeast3) 
+  - 리전: 서울 (asia-northeast3-a) 
   - Image : Ubuntu 24.04.1 LTS(x86/64) 단, MLFlow 등 모델 학습 인스턴스는 Deep Learning VM with CUDA 12.3 M125
   - Instance Type :  E2.standard-4 (vcpu 4, ram 16gb)
   - Storage : 최소 100GB (균형 있는 영구 디스크)
@@ -100,28 +100,28 @@
 ![image](https://github.com/user-attachments/assets/8da81757-4720-4548-bd5f-f1b66901de49)
 
 
-- 데이터 파이프라인은 4개의 주요 단계로 구성되어 있음.<br>
+- 데이터 파이프라인은 4개의 주요 계층으로 구성되어 있음.<br>
 
-#### 1) Storage Layer (입력 저장 단계)
+#### 1) Storage Layer (입력 저장소 계층)
 - 데이터 소스:
   - CSV 파일 업로드를 통해 데이터를 입력받음.
-  - GCS(Google Cloud Storage)에 데이터를 저장.
+  - GCS(Google Cloud Storage)에 직접 데이터를 저장하거나, GCS에서 데이터 가져오는 것도 가능.
 
 
 
-#### 2) Processing Layer (데이터 처리 단계)
+#### 2) Processing Layer (데이터 처리 계층)
 - Apache Spark를 사용하여 3단계 데이터 처리 수행.
   - 데이터 검증 (Data Validation): 데이터를 검증하고 품질을 확인.
   - 변환 (Transformation): 호텔 도메인에 기반한 feature 생성 및 데이터 전처리.
   - 포맷 변환 (Format Convert): 데이터를 효율적으로 저장 및 활용할 수 있도록 'Parquet' 포맷으로 변환.
 
 
-#### 3) Storage Layer (출력 저장 단계)
+#### 3) Storage Layer (출력 저장소 계층)
   - 최종 처리된 데이터를 feature store인 Cloud Storage Bucket에 저장.
   - feast를 사용하지 않은 이유는 인프라 구축 초기 단계이기 때문에 최대한 간소화하기로 결정했기 때문임. 
 
 
-#### 4) Consumption Layer (소비 단계)
+#### 4) Consumption Layer (소비 계층)
   - 최종 데이터는 데이터 사이언티스트들이 Feature Store에서 데이터를 가져와 분석 및 모델 학습 등에 활용.
 
 
@@ -149,9 +149,9 @@
       - 이를 통해 이전 모델로 롤백하거나 다양한 모델을 비교할 수 있음.
   
     - 모델 상태 관리: 모델의 상태를 3단계로 나눠, 배포 단계 및 사용 여부를 명확히 함. 
-      - Staging: 실험 조건에 맞는 상위 n개 모델.
+      - Staging: 테스트 중인 모델.
       - Production: 실제 서비스 중인 모델, 배포 대상으로 지정됨. 
-      - Archived: Porduction에 있던 과거 모델은 archived로 변경. 
+      - Archived: Porduction에 있던 과거 모델은 archived로 변경, 더 이상 사용되지 않는 모델.
 
    
 
@@ -176,11 +176,11 @@
 ![image](https://github.com/user-attachments/assets/99c324b5-a783-4f89-9fd8-6b642801bc8e)
 
 ### 프로메테우스
-- 데이터 수집 방식: pull 방식 선택, 모니터링 대상 각각의 서버마다 설치하지 않고 monitoring 서버에만 prometheus를 설치함. 
-- Logstash나 Telegraf같은 Pushing 방식보다 모니터링 서버에 영향을 덜 주기 때문에 모니터링 도구로 선택하게 되었음. 
+- 데이터 수집 방식: pull 방식 선택, 모니터링 대상 각각의 서버마다 설치하지 않고 monitoring 서버에만 prometheus설치함. 
+- Logstash나 Telegraf같은 Pushing 방식보다 모니터링 서버에 영향이 가는 장애가 적은 편이어서 모니터링 도구로 선택하게 되었음. 
 
 ### 그라파나
-- 차트와 그래프를 활용해 데이터를 시각화 할 수 있어 모니터링 도구로 선택하게 되었음. 
+- 대시보드에 차트와 그래프를 제작해서 시각화해서 데이터를 손쉽게 해석할 수 있어서 선택하게 되었음. 
 
 ### 모니터링 네트워크 설정
 - node exporter의 경우 서버를 모니터링 하는 것이기 때문에 다양한 메트릭을 수집할 수 없어서 아래와 같은 도구 사용 
@@ -194,5 +194,7 @@
 ![image](https://github.com/user-attachments/assets/5a1acb14-15fc-476f-a595-244ad635defd)
 
 ![image](https://github.com/user-attachments/assets/41e20b78-6652-4cdf-886f-802741ce3e42)
+
+
 
 
